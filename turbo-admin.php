@@ -16,7 +16,8 @@
 /* Todo:
  *
  * - Composer and autoloading
- * - Add submenu items
+ * ✅ Add submenu items
+ * - Filter items to allow people to hook in their own
  * - Up/Down/Select
  * - General refactor to objects
  * - Check roles/permissions
@@ -133,11 +134,11 @@ function ta_output_palette_markup()
 
 		#ta-command-palette-items {
 			background-color: #000;
-			border-radius: 8px;
 			font-size: 1.2rem;
 			display: block;
 			margin: 0;
-			padding: 0 0.5rem;
+			padding: 0;
+			list-style-type: none;
 			width: 100%;
 			height: 80%;
 			max-height: 300px;
@@ -147,7 +148,14 @@ function ta_output_palette_markup()
 
 		#ta-command-palette li {
 			display: flex;
+			margin: 0;
 			padding: 0.5rem;
+		}
+
+		#ta-command-palette li.selected {
+			display: flex;
+			padding: 0.5rem;
+			background-color: #2271b1;
 		}
 
 		#ta-command-palette .update-plugins,
