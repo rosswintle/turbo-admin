@@ -15,18 +15,43 @@
 
 /* Todo:
  *
+ * - Composer and autoloading
  * - Add submenu items
  * - Up/Down/Select
  * - General refactor to objects
+ * - Check roles/permissions
  */
+
+include 'classes/paletteItem.php';
 
 function ta_get_admin_menu()
 {
 	global $menu, $submenu, $_registered_pages, $_parent_pages;
-	ray($_registered_pages);
-	ray($_parent_pages);
+	ray($menu);
+	ray($submenu);
+	// ray($_registered_pages);
+	// ray($_parent_pages);
 
-	return $menu;
+	$items = [];
+
+	foreach ($menu as $item) {
+		$items[] = new paletteItem($item[0], $item[2], '');
+	}
+
+	foreach ($submenu as $parentPath => $subitems) {
+		// These are indexed by parent path so we need to find the parent
+		$parents = array_filter($items, function ($item) use ($parentPath) {
+			return $item->pagePath === $parentPath;
+		});
+
+		$parent = current($parents);
+
+		foreach ($subitems as $item) {
+			$items[] = new paletteItem($item[0], $item[2], $parent->title);
+		}
+	}
+
+	return $items;
 }
 
 add_action('admin_enqueue_scripts', 'ta_add_admin_scripts', 10, 1);
@@ -48,9 +73,12 @@ function ta_output_palette_markup()
 			<input id="ta-command-palette-input" name=" ta-command-palette-input" type="text" />
 			<ul id="ta-command-palette-items">
 				<?php foreach (ta_get_admin_menu() as $item) : ?>
-					<?php if (!empty($item[0])) : ?>
+					<?php if (!empty($item->title)) : ?>
 						<li>
-							<?php echo $item[0]; ?>
+							<?php if (!empty($item->parentTitle)) : ?>
+								<?php echo $item->parentTitle ?>:
+							<?php endif; ?>
+							<?php echo $item->title; ?>
 						</li>
 					<?php endif; ?>
 				<?php endforeach; ?>
@@ -118,8 +146,28 @@ function ta_output_palette_markup()
 		}
 
 		#ta-command-palette li {
-			display: block;
+			display: flex;
 			padding: 0.5rem;
+		}
+
+		#ta-command-palette .update-plugins,
+		#ta-command-palette .awaiting-mod {
+			background-color: #d63638;
+			color: #fff;
+			border-radius: 9px;
+			height: 18px;
+			min-width: 18px;
+			padding: 0 5px;
+			font-size: 11px;
+			line-height: 1.6;
+			text-align: center;
+			display: inline-block;
+			margin-left: 0.5rem
+		}
+
+		#ta-command-palette .update-plugins.count-0,
+		#ta-command-palette .awaiting-mod.count-0 {
+			display: none;
 		}
 	</style>
 <?php
