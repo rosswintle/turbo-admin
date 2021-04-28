@@ -15,12 +15,12 @@
 
 /* Todo:
  *
- * - Composer and autoloading
+ * ❓ Composer and autoloading (probably not needed after refactor to JS)
  * ✅ Add submenu items
  * - Filter items to allow people to hook in their own
  * ✅ Up/Down/Select
  * - General refactor to objects
- * - Check roles/permissions
+ * ✅ Check roles/permissions (not needed now we're pure JS)
  * ✅ Scroll selected item into view
  * - Allow user selectable keyboard shortcut
  */
