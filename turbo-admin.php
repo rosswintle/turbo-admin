@@ -29,10 +29,6 @@ include 'classes/paletteItem.php';
 function ta_get_admin_menu()
 {
 	global $menu, $submenu, $_registered_pages, $_parent_pages;
-	ray($menu);
-	ray($submenu);
-	// ray($_registered_pages);
-	// ray($_parent_pages);
 
 	$items = [];
 
