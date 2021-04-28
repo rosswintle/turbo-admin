@@ -95,6 +95,10 @@ class TurboAdmin {
 		}
 	}
 
+	doAction() {
+		this.selectedItem.querySelector('a').click();
+	}
+
 	getPaletteItems() {
 		return this.paletteItemsElement?.querySelectorAll('li');
 	}

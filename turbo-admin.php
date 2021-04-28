@@ -18,9 +18,10 @@
  * - Composer and autoloading
  * ✅ Add submenu items
  * - Filter items to allow people to hook in their own
- * - Up/Down/Select
+ * ✅ Up/Down/Select
  * - General refactor to objects
  * - Check roles/permissions
+ * - Scroll selected item into view
  */
 
 include 'classes/paletteItem.php';
@@ -76,10 +77,12 @@ function ta_output_palette_markup()
 				<?php foreach (ta_get_admin_menu() as $item) : ?>
 					<?php if (!empty($item->title)) : ?>
 						<li>
-							<?php if (!empty($item->parentTitle)) : ?>
-								<?php echo $item->parentTitle ?>:
-							<?php endif; ?>
-							<?php echo $item->title; ?>
+							<a href="<?php echo $item->pagePath; ?>">
+								<?php if (!empty($item->parentTitle)) : ?>
+									<?php echo $item->parentTitle ?>:
+								<?php endif; ?>
+								<?php echo $item->title; ?>
+							</a>
 						</li>
 					<?php endif; ?>
 				<?php endforeach; ?>
@@ -147,9 +150,15 @@ function ta_output_palette_markup()
 		}
 
 		#ta-command-palette li {
-			display: flex;
+			display: block;
 			margin: 0;
 			padding: 0.5rem;
+		}
+
+		#ta-command-palette a {
+			display: flex;
+			color: #FFF;
+			text-decoration: none;
 		}
 
 		#ta-command-palette li.selected {
