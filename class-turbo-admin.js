@@ -1,6 +1,24 @@
-class TurboAdmin {
+/*
+ * Some notes on how this works...
+ *
+ * paletteData is passed into the constructor and is the initial list of items
+ * these are TurboAdminMenuItem objects
+ *
+ * At any point, buildPaletteItems() can be called to turn the paletteData
+ * into an array of "li" nodes.
+ *
+ * updatePaletteItems inserts the paletteItems into the "ul" list and sets the
+ * selectedElement
+ *
+ * The selectedItem is always one of the paletteItems
+ *
+ * paletteSearch rebuilds the paletteItems from the paletteData using
+ * buildPaletteItems, and then filters the list with FuseJS
+ */
 
-	constructor() {
+export default class TurboAdmin {
+
+	constructor(paletteData) {
 
 		console.log('Initialising TurboAdmin');
 
@@ -8,17 +26,20 @@ class TurboAdmin {
 		this.paletteInputElement = document.getElementById('ta-command-palette-input');
 		this.paletteItemsElement = document.getElementById('ta-command-palette-items');
 
-		this.paletteItems = [];
+		// Get palette data
+		this.paletteData = paletteData;
+		// Convert into LI elements
+		this.paletteItems = this.buildPaletteItems();
+		this.selectedItem = this.paletteItems[0];
+		// Add them to the DOM
+		this.updatePaletteItems();
+
 		this.paletteFuseOptions = [];
 		this.paletteFuse = null;
 
 		if (typeof (Fuse) !== 'function') {
 			return;
 		}
-
-		this.paletteItems = this.getPaletteItems();
-		this.selectedItem = this.paletteItems[0];
-		this.setSelectedElement();
 
 		this.paletteFuseOptions = {
 			keys: ['innerText'],
@@ -33,6 +54,25 @@ class TurboAdmin {
 		});
 	}
 
+	buildPaletteItems() {
+		const paletteItems = [];
+
+		this.paletteData.forEach(item => {
+			const li = document.createElement('li');
+			const a = document.createElement('a');
+			li.appendChild(a);
+			a.href = item.action;
+			let title = item.title;
+			if (item.parentTitle) {
+				title = item.parentTitle + ": " + title;
+			}
+			a.innerHTML = title;
+			paletteItems.push(li);
+		});
+
+		return paletteItems;
+	}
+
 	handleGlobalKey(e) {
 		console.log(e.code);
 		if (e.code === 'KeyP' && this.metaKeysPressed(e)) {
@@ -41,15 +81,22 @@ class TurboAdmin {
 		if (e.code === 'Escape' && this.paletteShown()) {
 			this.hidePalette();
 		}
+		// Disable keyUp and keyDown if palette shown
+		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown') && this.paletteShown()) {
+			e.preventDefault();
+		}
 	}
 
 	paletteActions(e) {
 		if (e.code === 'ArrowDown' && this.paletteShown()) {
+			e.preventDefault();
 			this.moveDown();
 			return;
 		}
 		if (e.code === 'ArrowUp' && this.paletteShown()) {
+			e.preventDefault();
 			this.moveUp();
+			return;
 		}
 		if (e.code === 'Enter' && this.paletteShown()) {
 			this.doAction();
@@ -78,9 +125,11 @@ class TurboAdmin {
 	setSelectedElement() {
 		this.paletteItemsElement?.querySelectorAll('li.selected')?.forEach(e => e.classList.remove('selected'));
 
-		this.selectedItem.classList.add('selected');
+		if (this.selectedItem) {
+			this.selectedItem.classList.add('selected');
+			this.scrollList();
+		}
 
-		this.scrollList();
 	}
 
 	scrollList() {
@@ -114,42 +163,37 @@ class TurboAdmin {
 		this.selectedItem.querySelector('a').click();
 	}
 
-	getPaletteItems() {
-		return this.paletteItemsElement?.querySelectorAll('li');
-	}
-
 	selectedItemDisplayed() {
-		return Array.from(turboAdmin.paletteItemsElement.childNodes).includes(turboAdmin.selectedItem);
+		return Array.from(this.paletteItemsElement.childNodes).includes(this.selectedItem);
 	}
 
 	paletteSearchAndUpdate() {
-		this.updatePaletteItems(this.paletteSearch());
+		this.paletteSearch()
+		this.updatePaletteItems();
 	}
 
 	paletteSearch() {
-		if (this.paletteInputElement.value === '') {
-			return this.paletteItems;
+		this.paletteItems = this.buildPaletteItems();
+		if (this.paletteInputElement.value !== '') {
+			this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
 		}
-		return this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
 	}
 
-	updatePaletteItems(items) {
+	updatePaletteItems() {
 		const newItems = document.createElement('ul');
 		newItems.id = 'ta-command-palette-items';
 
-		items.forEach(i => {
+		this.paletteItems.forEach(i => {
 			newItems.appendChild(i);
 		})
 
 		this.paletteItemsElement.replaceChildren(...newItems.children);
 
 		if (!this.selectedItemDisplayed()) {
-			this.selectedItem = this.getPaletteItems()[0];
+			this.selectedItem = this.paletteItems[0];s
 		}
 
 		this.setSelectedElement();
 	}
 
 }
-
-document.addEventListener('turbo-admin-ready', e => { turboAdmin = new TurboAdmin(); });

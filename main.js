@@ -1,17 +1,12 @@
-class TurboAdminMenuItem {
+import TurboAdmin from './class-turbo-admin.js';
+import TurboAdminMenuItem from './class-turbo-admin-menu-item.js';
 
-	constructor(title, action, parentTitle) {
-		this.title = title;
-		this.action = action;
-		this.parentTitle = parentTitle;
-	}
-}
-
-class TurboAdminList {
+class Main {
 
 	constructor() {
 		this.menu = this.getMenu();
 		this.addPalette();
+		this.turboAdmin = new TurboAdmin(this.menu);
 	}
 
 	getMenu() {
@@ -60,29 +55,23 @@ class TurboAdminList {
 		palette.appendChild(input);
 		palette.appendChild(list);
 
-		this.menu.forEach(e => {
-			const li = document.createElement('li');
-			const a = document.createElement('a');
-			li.appendChild(a);
-			a.href = e.action;
-			let title = e.title;
-			if (e.parentTitle !== '') {
-				title = e.parentTitle + ": " + title;
-			}
-			a.innerHTML = title;
-			list.appendChild(li);
-		});
+		// this.menu.forEach(e => {
+		// 	const li = document.createElement('li');
+		// 	const a = document.createElement('a');
+		// 	li.appendChild(a);
+		// 	a.href = e.action;
+		// 	let title = e.title;
+		// 	if (e.parentTitle !== '') {
+		// 		title = e.parentTitle + ": " + title;
+		// 	}
+		// 	a.innerHTML = title;
+		// 	list.appendChild(li);
+		// });
 
 		const wpWrap = document.getElementById('wpwrap');
 		wpWrap.appendChild(container);
-
-		// Create ready event
-		var event = new CustomEvent("turbo-admin-ready");
-
-		// Dispatch/Trigger/Fire the event
-		document.dispatchEvent(event);
 	}
 
 }
-
-document.addEventListener('DOMContentLoaded', e => { turboAdminList = new TurboAdminList() });
+let turboAdmin = null;
+document.addEventListener('DOMContentLoaded', e => { turboAdmin = new Main() });
