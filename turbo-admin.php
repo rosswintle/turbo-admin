@@ -58,7 +58,8 @@ add_action('admin_enqueue_scripts', 'ta_add_admin_scripts', 10, 1);
 function ta_add_admin_scripts()
 {
 	wp_enqueue_script('fusejs', 'https://cdn.jsdelivr.net/npm/fuse.js@6.4.6', [], null, true);
-	wp_enqueue_script('turbo-admin', plugin_dir_url(__FILE__) . 'turbo-admin.js', ['fusejs'], null, true);
+	wp_enqueue_script('turbo-admin-lib', plugin_dir_url(__FILE__) . 'turbo-admin.js', ['fusejs'], null, true);
+	wp_enqueue_script('turbo-admin-main', plugin_dir_url(__FILE__) . 'main.js', ['turbo-admin-lib'], null, true);
 }
 
 add_action('admin_footer', 'ta_output_palette_markup');

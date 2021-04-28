@@ -150,4 +150,4 @@ class TurboAdmin {
 
 }
 
-turboAdmin = new TurboAdmin();
+document.addEventListener('turbo-admin-ready', e => { turboAdmin = new TurboAdmin(); });
