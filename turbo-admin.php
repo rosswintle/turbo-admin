@@ -21,7 +21,7 @@
  * ✅ Up/Down/Select
  * - General refactor to objects
  * - Check roles/permissions
- * - Scroll selected item into view
+ * ✅ Scroll selected item into view
  * - Allow user selectable keyboard shortcut
  */
 
@@ -133,6 +133,7 @@ function ta_output_palette_markup()
 		}
 
 		#ta-command-palette-items {
+			position: relative;
 			background-color: #000;
 			font-size: 1.2rem;
 			display: block;

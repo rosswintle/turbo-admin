@@ -27,7 +27,6 @@ class TurboAdmin {
 		document.addEventListener('keydown', e => this.handleGlobalKey(e));
 
 		this.paletteInputElement.addEventListener('keyup', e => {
-			this.paletteSearchAndUpdate();
 			this.paletteActions(e);
 		});
 	}
@@ -53,6 +52,7 @@ class TurboAdmin {
 		if (e.code === 'Enter' && this.paletteShown()) {
 			this.doAction();
 		}
+		this.paletteSearchAndUpdate();
 	}
 
 	metaKeysPressed(e) {
@@ -77,6 +77,19 @@ class TurboAdmin {
 		this.paletteItemsElement?.querySelectorAll('li.selected')?.forEach(e => e.classList.remove('selected'));
 
 		this.selectedItem.classList.add('selected');
+
+		this.scrollList();
+	}
+
+	scrollList() {
+		// Scrolling up
+		if (this.selectedItem.offsetTop < this.paletteItemsElement.scrollTop) {
+			this.paletteItemsElement.scrollTop = this.selectedItem.offsetTop;
+		}
+		// Scrolling down
+		if (this.selectedItem.offsetTop + this.selectedItem.offsetHeight > this.paletteItemsElement.offsetHeight + this.paletteItemsElement.scrollTop) {
+			this.paletteItemsElement.scrollTop = this.selectedItem.offsetTop + this.selectedItem.offsetHeight - this.paletteItemsElement.offsetHeight;
+		}
 	}
 
 	moveDown() {
