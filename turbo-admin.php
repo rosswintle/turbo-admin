@@ -22,6 +22,7 @@
  * - General refactor to objects
  * - Check roles/permissions
  * - Scroll selected item into view
+ * - Allow user selectable keyboard shortcut
  */
 
 include 'classes/paletteItem.php';
