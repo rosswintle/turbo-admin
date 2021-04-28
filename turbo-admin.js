@@ -2,6 +2,8 @@ class TurboAdmin {
 
 	constructor() {
 
+		console.log('Initialising TurboAdmin');
+
 		this.paletteElement = document.getElementById('ta-command-palette-container');
 		this.paletteInputElement = document.getElementById('ta-command-palette-input');
 		this.paletteItemsElement = document.getElementById('ta-command-palette-items');
@@ -60,7 +62,7 @@ class TurboAdmin {
 	}
 
 	showPalette() {
-		this.paletteInputElement.value='';
+		this.paletteInputElement.value = '';
 		this.paletteElement?.classList.add('active');
 		this.paletteInputElement?.focus();
 	}
