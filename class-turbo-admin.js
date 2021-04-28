@@ -82,7 +82,7 @@ export default class TurboAdmin {
 			this.hidePalette();
 		}
 		// Disable keyUp and keyDown if palette shown
-		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown') && this.paletteShown()) {
+		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === "Enter") && this.paletteShown()) {
 			e.preventDefault();
 		}
 	}
@@ -160,6 +160,7 @@ export default class TurboAdmin {
 	}
 
 	doAction() {
+		this.hidePalette();
 		this.selectedItem.querySelector('a').click();
 	}
 
@@ -190,7 +191,7 @@ export default class TurboAdmin {
 		this.paletteItemsElement.replaceChildren(...newItems.children);
 
 		if (!this.selectedItemDisplayed()) {
-			this.selectedItem = this.paletteItems[0];s
+			this.selectedItem = this.paletteItems[0];
 		}
 
 		this.setSelectedElement();
