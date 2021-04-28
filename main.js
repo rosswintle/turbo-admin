@@ -10,7 +10,6 @@ class TurboAdminMenuItem {
 class TurboAdminList {
 
 	constructor() {
-		console.log('It lives!');
 		this.menu = this.getMenu();
 		this.addPalette();
 	}
