@@ -2,8 +2,8 @@
 
 /**
  * Plugin Name:     Turbo Admin
- * Plugin URI:      PLUGIN SITE HERE
- * Description:     PLUGIN DESCRIPTION HERE
+ * Plugin URI:      https://oikos.digital/turbo-admin
+ * Description:     The command palette that gives super fast access to your WordPress Dashboard.
  * Author:          Ross Wintle
  * Author URI:      https://rosswintle.uk/
  * Text Domain:     turbo-admin
@@ -30,7 +30,6 @@ add_action('admin_enqueue_scripts', 'ta_add_admin_scripts', 10, 1);
 function ta_add_admin_scripts()
 {
 	wp_enqueue_script('fusejs', 'https://cdn.jsdelivr.net/npm/fuse.js@6.4.6', [], null, true);
-	// wp_enqueue_script('turbo-admin-main', plugin_dir_url(__FILE__) . 'main.js', [], null, true);
 	wp_enqueue_style('turbo-admin-styles', plugin_dir_url(__FILE__) . 'turbo-admin.css', []);
 }
 
@@ -40,4 +39,19 @@ function ta_add_admin_module_script()
 ?>
 	<script type="module" src="<?php echo esc_url(plugin_dir_url(__FILE__) . 'main.js'); ?>"></script>
 <?php
+}
+
+add_action('admin_bar_menu', 'ta_add_admin_bar_item', 1000);
+function ta_add_admin_bar_item($admin_bar)
+{
+	$admin_bar->add_menu(array(
+		'id'    => 'turbo-admin',
+		'parent' => null,
+		'group'  => null,
+		'title' => '<span class="ab-icon" style="margin-right: 0;"><img src="' . plugin_dir_url(__FILE__) . '/images/snail.svg' . '" style="display: block; width: 24px; height: 24px;"></span>',
+		'href'  => null,
+		'meta' => [
+			'title' => __('Turbo admin is installed! Use Ctrl-Alt-Shift-P (or Cmd-Alt-Shift-P for Mac) to open the command palette.', 'turbo-admin'), //This title will show on hover
+		]
+	));
 }

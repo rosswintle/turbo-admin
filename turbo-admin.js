@@ -58,7 +58,13 @@ class TurboAdmin {
     }
 
     metaKeysPressed(e) {
-        return (e.metaKey && e.shiftKey && e.altKey);
+		// On mac, Cmd is metaKey.
+		// Probably need to detect Ctrl on Windows
+		if (navigator.platform.startsWith('Mac')) {
+			return (e.metaKey && e.shiftKey && e.altKey);
+		} else {
+			return (e.ctrlKey && e.shiftKey && e.altKey);
+		}
     }
 
     showPalette() {
