@@ -17,6 +17,7 @@
  */
 
 import Fuse from './fuse-6.4.6.js';
+import TurboAdminMenuItem from './class-turbo-admin-menu-item';
 
 export default class TurboAdmin {
 
@@ -28,8 +29,16 @@ export default class TurboAdmin {
 		this.paletteInputElement = document.getElementById('ta-command-palette-input');
 		this.paletteItemsElement = document.getElementById('ta-command-palette-items');
 
+		// Figure out the siteurl and home
+		this.siteUrl = window.location.href.match(/(^.*wp-admin)/)[1];
+		this.home = document.getElementById('wp-admin-bar-site-name').querySelector('a').href;
+
 		// Get palette data
 		this.paletteData = paletteData;
+
+		// Add additional paletteData;
+		this.addAdditionalPaletteData();
+
 		// Convert into LI elements
 		this.paletteItems = this.buildPaletteItems();
 		this.selectedItem = this.paletteItems[0];
@@ -54,6 +63,17 @@ export default class TurboAdmin {
 		this.paletteInputElement.addEventListener('keydown', e => {
 			this.paletteActions(e);
 		});
+	}
+
+	addAdditionalPaletteData() {
+		this.paletteData.push(
+			new TurboAdminMenuItem('View/visit site', this.home, '')
+		);
+
+		const logoutUrl = document.getElementById('wp-admin-bar-logout').querySelector('a').href;
+		this.paletteData.push(
+			new TurboAdminMenuItem('Logout', logoutUrl, '')
+		);
 	}
 
 	buildPaletteItems() {
