@@ -24,9 +24,40 @@ export default class TurboAdmin {
 
 		console.log('Initialising TurboAdmin');
 
+		this.shortcuts = [
+			{
+				'key': 'KeyP',
+				'actionType': 'url',
+				'actionValue': '/wp-admin/edit.php'
+			},
+			{
+				'key': 'KeyV',
+				'actionType': 'url',
+				'actionValue': '/'
+			},
+			{
+				'key': 'KeyU',
+				'actionType': 'url',
+				'actionValue': '/wp-admin/users.php'
+			},
+			{
+				'key': 'KeyD',
+				'actionType': 'url',
+				'actionValue': '/wp-admin/'
+			},
+			{
+				'key': 'KeyG',
+				'actionType': 'url',
+				'actionValue': '/wp-admin/plugins.php'
+			}
+		]
+
 		this.paletteElement = document.getElementById('ta-command-palette-container');
 		this.paletteInputElement = document.getElementById('ta-command-palette-input');
 		this.paletteItemsElement = document.getElementById('ta-command-palette-items');
+		this.menuBarItem = document.getElementById('ta-menu-bar-icon');
+
+		this.doingShortcut = false;
 
 		// Get palette data
 		this.paletteData = paletteData;
@@ -77,15 +108,24 @@ export default class TurboAdmin {
 
 	handleGlobalKey(e) {
 		console.log(e.code);
-		if (e.code === 'KeyP' && this.metaKeysPressed(e)) {
+		if (e.code === 'KeyP' && this.paletteMetaKeysPressed(e)) {
 			this.showPalette();
+			return;
+		}
+		if (e.code === 'KeyP' && this.shortcutMetaKeysPressed(e)) {
+			this.startShortcut();
+			return;
 		}
 		if (e.code === 'Escape' && this.paletteShown()) {
 			this.hidePalette();
+			return;
 		}
 		// Disable keyUp and keyDown if palette shown
 		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Enter') && this.paletteShown()) {
 			e.preventDefault();
+		}
+		if (this.doingShortcut) {
+			this.checkShortcut(e);
 		}
 	}
 
@@ -106,13 +146,23 @@ export default class TurboAdmin {
 		this.paletteSearchAndUpdate();
 	}
 
-	metaKeysPressed(e) {
+	paletteMetaKeysPressed(e) {
 		// On mac, Cmd is metaKey.
 		// Probably need to detect Ctrl on Windows
 		if (navigator.platform.startsWith('Mac')) {
 			return (e.metaKey && e.shiftKey && e.altKey);
 		} else {
 			return (e.ctrlKey && e.shiftKey && e.altKey);
+		}
+	}
+
+	shortcutMetaKeysPressed(e) {
+		// On mac, Cmd is metaKey.
+		// Probably need to detect Ctrl on Windows
+		if (navigator.platform.startsWith('Mac')) {
+			return (e.metaKey && e.altKey);
+		} else {
+			return (e.ctrlKey && e.altKey);
 		}
 	}
 
@@ -128,6 +178,33 @@ export default class TurboAdmin {
 
 	paletteShown() {
 		return this.paletteElement?.classList.contains('active');
+	}
+
+	startShortcut() {
+		console.log('Starting Shortcut');
+		this.menuBarItem?.classList.add('active');
+		this.doingShortcut = true;
+		setTimeout(this.endShortcut.bind(this), 2000);
+	}
+
+	endShortcut() {
+		console.log('Ending Shortcut');
+		this.doingShortcut = false;
+		this.menuBarItem?.classList.remove('active');
+	}
+
+	checkShortcut(e) {
+		console.log('Checking shortcut');
+
+		let shortcut = this.shortcuts.filter(item => item.key === e.code);
+		if (!shortcut) {
+			return;
+		} else {
+			shortcut = shortcut.pop();
+		}
+		if (shortcut.actionType === 'url') {
+			window.location=shortcut.actionValue;
+		}
 	}
 
 	setSelectedElement() {

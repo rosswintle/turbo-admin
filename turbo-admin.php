@@ -42,7 +42,7 @@ function add_admin_bar_item($admin_bar)
 		'id'    => 'turbo-admin',
 		'parent' => null,
 		'group'  => null,
-		'title' => '<span class="ab-icon" style="margin-right: 0;"><img src="' . plugin_dir_url(__FILE__) . '/images/snail.svg' . '" style="display: block; width: 24px; height: 24px;"></span>',
+		'title' => '<span id="ta-menu-bar-icon" class="ab-icon" style="margin-right: 0;"><img src="' . plugin_dir_url(__FILE__) . '/images/snail.svg' . '" style="display: block; width: 24px; height: 24px;"></span>',
 		'href'  => null,
 		'meta' => [
 			'title' => __('Turbo admin is installed! Use Ctrl-Alt-Shift-P (or Cmd-Alt-Shift-P for Mac) to open the command palette.', 'turbo-admin'), //This title will show on hover

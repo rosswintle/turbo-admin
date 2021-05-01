@@ -121,3 +121,7 @@
 #ta-command-palette .awaiting-mod.count-0 {
 	display: none;
 }
+
+#ta-menu-bar-icon.active img {
+	transform: rotate(15deg);
+}
