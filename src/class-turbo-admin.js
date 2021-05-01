@@ -16,6 +16,8 @@
  * buildPaletteItems, and then filters the list with FuseJS
  */
 
+import Fuse from './fuse-6.4.6.js';
+
 export default class TurboAdmin {
 
 	constructor(paletteData) {
@@ -82,7 +84,7 @@ export default class TurboAdmin {
 			this.hidePalette();
 		}
 		// Disable keyUp and keyDown if palette shown
-		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === "Enter") && this.paletteShown()) {
+		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Enter') && this.paletteShown()) {
 			e.preventDefault();
 		}
 	}
@@ -105,7 +107,13 @@ export default class TurboAdmin {
 	}
 
 	metaKeysPressed(e) {
-		return (e.metaKey && e.shiftKey && e.altKey);
+		// On mac, Cmd is metaKey.
+		// Probably need to detect Ctrl on Windows
+		if (navigator.platform.startsWith('Mac')) {
+			return (e.metaKey && e.shiftKey && e.altKey);
+		} else {
+			return (e.ctrlKey && e.shiftKey && e.altKey);
+		}
 	}
 
 	showPalette() {

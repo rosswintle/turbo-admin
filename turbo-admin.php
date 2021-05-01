@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name:     Turbo Admin
  * Plugin URI:      https://oikos.digital/turbo-admin
@@ -25,24 +24,19 @@
  * - Allow user selectable keyboard shortcut
  */
 
-add_action('admin_enqueue_scripts', 'ta_add_admin_scripts', 10, 1);
+namespace TurboAdmin;
 
-function ta_add_admin_scripts()
+add_action('admin_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
+
+function add_admin_scripts()
 {
-	wp_enqueue_script('fusejs', 'https://cdn.jsdelivr.net/npm/fuse.js@6.4.6', [], null, true);
+	wp_enqueue_script('turbo-admin-scripts', plugin_dir_url(__FILE__) . 'dist/main.min.js', [], null, true);
 	wp_enqueue_style('turbo-admin-styles', plugin_dir_url(__FILE__) . 'turbo-admin.css', []);
 }
 
-add_action('admin_print_footer_scripts', 'ta_add_admin_module_script', 10, 0);
-function ta_add_admin_module_script()
-{
-?>
-	<script type="module" src="<?php echo esc_url(plugin_dir_url(__FILE__) . 'main.js'); ?>"></script>
-<?php
-}
 
-add_action('admin_bar_menu', 'ta_add_admin_bar_item', 1000);
-function ta_add_admin_bar_item($admin_bar)
+add_action('admin_bar_menu', 'TurboAdmin\add_admin_bar_item', 1000);
+function add_admin_bar_item($admin_bar)
 {
 	$admin_bar->add_menu(array(
 		'id'    => 'turbo-admin',
