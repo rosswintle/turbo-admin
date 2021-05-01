@@ -177,7 +177,7 @@ export default class TurboAdmin {
 	}
 
 	paletteSearchAndUpdate() {
-		this.paletteSearch()
+		this.paletteSearch();
 		this.updatePaletteItems();
 	}
 
