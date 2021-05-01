@@ -51,7 +51,7 @@ export default class TurboAdmin {
 
 		document.addEventListener('keydown', e => this.handleGlobalKey(e));
 
-		this.paletteInputElement.addEventListener('keyup', e => {
+		this.paletteInputElement.addEventListener('keydown', e => {
 			this.paletteActions(e);
 		});
 	}
