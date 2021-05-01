@@ -1,19 +1,21 @@
 #ta-command-palette-container {
-	display: none;
-	background-color: rgba(0, 0, 0, 0.4);
+	background-color: rgba(0, 0, 0, 0.0);
 	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100vw;
-	height: 100vh;
+	height: 0vh;
 	flex-direction: column;
 	justify-content: space-around;
 	align-items: center;
 	z-index: 999999;
+	transition: background-color 0.3s, height 0s 0.3s;
 }
 
 #ta-command-palette-container.active {
-	display: block;
+	background-color: rgba(0, 0, 0, 0.4);
+	height: 100vh;
+	transition: background-color 0.3s;
 }
 
 #ta-command-palette {
@@ -25,9 +27,17 @@
 	padding: 1rem;
 	border-radius: 8px;
 	position: absolute;
-	top: 10vh;
+	top: calc( 10vh + 20px );
 	left: 50%;
+	overflow: hidden;
 	transform: translateX(-50%);
+	opacity: 0;
+	transition: top 0.3s, opacity 0.3s;
+}
+
+#ta-command-palette-container.active #ta-command-palette {
+	opacity: 1;
+	top: 10vh;
 }
 
 #ta-command-palette-input {
