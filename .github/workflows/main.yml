@@ -1,3 +1,4 @@
+# Based on https://github.com/10up/action-wordpress-plugin-deploy
 name: Deploy to WordPress.org
 on:
   push:
@@ -9,10 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
-    - name: Build # Remove or modify this step as needed
-      run: |
-        npm install
-        npm run build
     - name: WordPress Plugin Deploy
       uses: 10up/action-wordpress-plugin-deploy@stable
       env:
