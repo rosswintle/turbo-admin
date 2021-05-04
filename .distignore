@@ -5,6 +5,7 @@
 .editorconfig
 .eslintignore
 .eslintrc
+.git
 .github
 .gitignore
 .gitlab-ci.yml
