@@ -4,7 +4,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 5.7
 Tested up to: 5.7.1
 Requires PHP: 7.2
-Stable tag: 0.1.1
+Stable tag: 0.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -66,6 +66,9 @@ If you're reading this then you've probably already done step 1. So what are you
 1. The command palette in action
 
 == Changelog ==
+
+= 0.1.2 =
+* Ignore unwanted files in distribution
 
 = 0.1.1 =
 * Fix plugin repo assets
