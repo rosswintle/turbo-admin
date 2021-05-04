@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name:     Turbo Admin
  * Plugin URI:      https://oikos.digital/turbo-admin
@@ -51,4 +52,71 @@ function add_admin_bar_item($admin_bar)
 			'title' => __('Turbo admin is installed! Use Ctrl-Alt-Shift-P (or Cmd-Alt-Shift-P for Mac) to open the command palette.', 'turbo-admin'), //This title will show on hover
 		]
 	));
+}
+
+add_action('show_user_profile', 'TurboAdmin\show_profile_fields');
+add_action('edit_user_profile', 'TurboAdmin\show_profile_fields');
+
+function show_profile_fields($user)
+{
+	$shortcut = get_user_meta($user->ID, 'turbo-admin-shortcut', true);
+	if (empty($shortcut)) {
+		$shortcut = [
+			'meta' => true,
+			'alt' => true,
+			'ctrl' => false,
+			'shift' => true,
+			'key' => 'P',
+		];
+	}
+?>
+	<h3>Turbo Admin settings</h3>
+	<table class="form-table">
+		<tr>
+			<th><label for="turbo-admin-shortcut"><?php _e('Keyboard shortcut', 'turbo_admin') ?></label></th>
+			<td>
+				<label style="margin-right: 18px;">
+					<input type="checkbox" name="turbo-admin-meta-key" <?php checked($shortcut['meta']) ?>></input>
+					Ctrl/Cmd
+				</label>
+				<label style="margin-right: 18px;">
+					<input type="checkbox" name="turbo-admin-alt-key" <?php checked($shortcut['alt']) ?>></input>
+					Alt/option
+				</label>
+				<label style="margin-right: 18px;">
+					<input type="checkbox" name="turbo-admin-ctrl-key" <?php checked($shortcut['ctrl']) ?>></input>
+					Ctrl
+				</label>
+				<label style="margin-right: 18px;">
+					<input type="checkbox" name="turbo-admin-shift-key" <?php checked($shortcut['shift']) ?>></input>
+					Shift
+				</label>
+				<input type="text" required name="turbo-admin-shortcut" id="turbo-admin-shortcut" minLength="1" maxLength="1" value="<?php echo esc_attr($shortcut['key']); ?>" class="regular-text" /><br />
+				<span class="description">Please enter the keyboard shortcut you want to use to activate the Turbo Admin command palette.</span>
+			</td>
+		</tr>
+	</table>
+
+<?php
+}
+
+add_action('personal_options_update', 'TurboAdmin\save_extra_profile_fields');
+add_action('edit_user_profile_update', 'TurboAdmin\save_extra_profile_fields');
+
+function save_extra_profile_fields($user_id)
+{
+
+	if (!current_user_can('edit_user', $user_id)) {
+		return false;
+	}
+
+	$shortcut = [];
+
+	$shortcut['meta'] = isset($_POST['turbo-admin-meta-key']);
+	$shortcut['alt'] = isset($_POST['turbo-admin-alt-key']);
+	$shortcut['ctrl'] = isset($_POST['turbo-admin-ctrl-key']);
+	$shortcut['shift'] = isset($_POST['turbo-admin-shift-key']);
+	$shortcut['key'] = isset($_POST['turbo-admin-shortcut']) ? esc_attr($_POST['turbo-admin-shortcut']) : 'P';
+
+	update_user_meta($user_id, 'turbo-admin-shortcut', $shortcut);
 }
