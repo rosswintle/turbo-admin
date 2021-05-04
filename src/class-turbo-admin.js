@@ -63,6 +63,10 @@ export default class TurboAdmin {
 		this.paletteInputElement.addEventListener('keydown', e => {
 			this.paletteActions(e);
 		});
+
+		this.paletteElement.addEventListener('click', e => {
+			this.checkForClickToClose(e);
+		});
 	}
 
 	addAdditionalPaletteData() {
@@ -148,6 +152,12 @@ export default class TurboAdmin {
 
 	paletteShown() {
 		return this.paletteElement?.classList.contains('active');
+	}
+
+	checkForClickToClose(e) {
+		if (e.target.id === this.paletteElement.id) {
+			this.hidePalette();
+		}
 	}
 
 	setSelectedElement() {
