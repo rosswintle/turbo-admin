@@ -27,11 +27,14 @@
 namespace TurboAdmin;
 
 add_action('admin_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
+add_action('wp_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
 
 function add_admin_scripts()
 {
-	wp_enqueue_script('turbo-admin-scripts', plugin_dir_url(__FILE__) . 'dist/main.min.js', [], null, true);
-	wp_enqueue_style('turbo-admin-styles', plugin_dir_url(__FILE__) . 'turbo-admin.css', []);
+	if (is_user_logged_in()) {
+		wp_enqueue_script('turbo-admin-scripts', plugin_dir_url(__FILE__) . 'dist/main.min.js', [], null, true);
+		wp_enqueue_style('turbo-admin-styles', plugin_dir_url(__FILE__) . 'turbo-admin.css', []);
+	}
 }
 
 

@@ -8,7 +8,18 @@ class Main {
 			console.log('TurboAdmin already initialised - I won\'t make a second copy!');
 			return;
 		}
+
+		// Figure out the siteurl and home - this is different on the front and back end
+		if (this.isBackend()) {
+			this.siteUrl = window.location.href.match(/(^.*wp-admin)/)[1];
+			this.home = document.getElementById('wp-admin-bar-site-name').querySelector('a').href;
+		} else {
+			this.siteUrl = document.getElementById('wp-admin-bar-dashboard').querySelector('a').href;
+			this.home = null; // Don't know how to detect this.
+		}
+
 		this.menu = this.getMenu();
+		this.addAdditionalMenuItems();
 		this.addPalette();
 		this.turboAdmin = new TurboAdmin(this.menu);
 	}
@@ -16,32 +27,56 @@ class Main {
 	getMenu() {
 		const items = [];
 		const menuTop = document.getElementById('adminmenu');
-		const topDOMItems = menuTop.querySelectorAll('li.menu-top');
-		topDOMItems.forEach(el => {
-			const a = el.querySelector('a.menu-top');
-			const title = a.querySelector('.wp-menu-name').innerHTML;
-			const action = a.href;
-			const parentTitle = '';
-			const item = new TurboAdminMenuItem(title, action, parentTitle);
-			items.push(item);
-
-			const subMenu = el.querySelector('.wp-submenu');
-			if (!subMenu) {
-				return;
-			}
-			const subItems = subMenu.querySelectorAll('li a');
-			if (!subItems) {
-				return;
-			}
-			subItems.forEach(subEl => {
-				const parentTitle = title;
-				const childTitle = subEl.innerHTML;
-				const childAction = subEl.href;
-				const item = new TurboAdminMenuItem(childTitle, childAction, parentTitle);
+		if (menuTop) {
+			const topDOMItems = menuTop.querySelectorAll('li.menu-top');
+			topDOMItems.forEach(el => {
+				const a = el.querySelector('a.menu-top');
+				const title = a.querySelector('.wp-menu-name').innerHTML;
+				const action = a.href;
+				const parentTitle = '';
+				const item = new TurboAdminMenuItem(title, action, parentTitle);
 				items.push(item);
-			})
-		});
+
+				const subMenu = el.querySelector('.wp-submenu');
+				if (!subMenu) {
+					return;
+				}
+				const subItems = subMenu.querySelectorAll('li a');
+				if (!subItems) {
+					return;
+				}
+				subItems.forEach(subEl => {
+					const parentTitle = title;
+					const childTitle = subEl.innerHTML;
+					const childAction = subEl.href;
+					const item = new TurboAdminMenuItem(childTitle, childAction, parentTitle);
+					items.push(item);
+				})
+			});
+		}
 		return items;
+	}
+
+	isBackend() {
+		return document.body.classList.contains('wp-admin');
+	}
+
+	addAdditionalMenuItems() {
+		// This can't always be detected
+		if (this.home) {
+			this.menu.push(
+				new TurboAdminMenuItem('View/visit site', this.home, '')
+			);
+		}
+		if (this.siteUrl && ! this.isBackend()) {
+			this.menu.push(
+				new TurboAdminMenuItem('Dashboard / Admin', this.siteUrl, '')
+			);
+		}
+		const logoutUrl = document.getElementById('wp-admin-bar-logout').querySelector('a').href;
+		this.menu.push(
+			new TurboAdminMenuItem('Logout', logoutUrl, '')
+		);
 	}
 
 	addPalette() {
@@ -59,21 +94,8 @@ class Main {
 		palette.appendChild(input);
 		palette.appendChild(list);
 
-		// this.menu.forEach(e => {
-		// 	const li = document.createElement('li');
-		// 	const a = document.createElement('a');
-		// 	li.appendChild(a);
-		// 	a.href = e.action;
-		// 	let title = e.title;
-		// 	if (e.parentTitle !== '') {
-		// 		title = e.parentTitle + ": " + title;
-		// 	}
-		// 	a.innerHTML = title;
-		// 	list.appendChild(li);
-		// });
-
-		const wpWrap = document.getElementById('wpwrap');
-		wpWrap.appendChild(container);
+		const wpAdminBar = document.getElementById('wpadminbar');
+		wpAdminBar.insertAdjacentElement('afterend', container);
 	}
 
 }
