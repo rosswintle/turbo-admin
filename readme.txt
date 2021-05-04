@@ -12,7 +12,20 @@ The command palette that gives super fast access to your WordPress Dashboard.
 
 == Description ==
 
-## The command palette that gives super fast access to your WordPress Dashboard.
+## Usage
+
+Install, activate and then:
+
+* Windows: Ctrl-Alt-Shift-P (Linux also?)
+* Mac: Cmd-Alt-Shift-P
+
+(I'm working on the settings screen to customise this)
+
+Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P again
+
+Hover over the snail in the admin bar for a reminder at any time.
+
+## Turbo Admin: The command palette that gives super fast access to your WordPress Dashboard.
 
 Ugh, this Dashboard menu is so cluttered?
 
@@ -66,6 +79,11 @@ If you're reading this then you've probably already done step 1. So what are you
 1. The command palette in action
 
 == Changelog ==
+
+= 0.1.5 =
+* Shortcut keys will now close the palette as well as open it
+* Clicking outside the palette will close it
+* More prominent usage instructions
 
 = 0.1.4 =
 * Fix overlay
