@@ -84,6 +84,7 @@ If you're reading this then you've probably already done step 1. So what are you
 * Shortcut keys will now close the palette as well as open it
 * Clicking outside the palette will close it
 * More prominent usage instructions
+* Detect existing Turbo Admin palette
 
 = 0.1.4 =
 * Fix overlay

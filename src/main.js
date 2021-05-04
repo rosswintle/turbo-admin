@@ -4,6 +4,10 @@ import TurboAdminMenuItem from './class-turbo-admin-menu-item.js';
 class Main {
 
 	constructor() {
+		if (document.getElementById('ta-command-palette-container')) {
+			console.log('TurboAdmin already initialised - I won\'t make a second copy!');
+			return;
+		}
 		this.menu = this.getMenu();
 		this.addPalette();
 		this.turboAdmin = new TurboAdmin(this.menu);
@@ -73,5 +77,8 @@ class Main {
 	}
 
 }
-let turboAdmin = null;
+
+// Note that in the extension, the globalThis is not the browser's global scope,
+// it is sandboxed. So we can't check across the plugin/extension boundary here.
+globalThis.turboAdmin = null;
 document.addEventListener('DOMContentLoaded', e => { turboAdmin = new Main() });
