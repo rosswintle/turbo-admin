@@ -4,7 +4,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 5.7
 Tested up to: 5.7.1
 Requires PHP: 7.2
-Stable tag: 0.1.4
+Stable tag: 0.1.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
