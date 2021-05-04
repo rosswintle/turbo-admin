@@ -102,7 +102,11 @@ export default class TurboAdmin {
 	handleGlobalKey(e) {
 		// console.log(e.code);
 		if (e.code === 'KeyP' && this.metaKeysPressed(e)) {
-			this.showPalette();
+			if (this.paletteShown()) {
+				this.hidePalette();
+			} else {
+				this.showPalette();
+			}
 		}
 		if (e.code === 'Escape' && this.paletteShown()) {
 			this.hidePalette();
