@@ -33,15 +33,45 @@ add_action('wp_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
 function add_admin_scripts()
 {
 	if (is_user_logged_in()) {
+		$userShortcutKeys = userShortcutKeys();
+
+		// We will pass an array of shortcut key objects into the JS
+		$shortcutKeys = [
+			$userShortcutKeys
+		];
+
 		wp_enqueue_script('turbo-admin-scripts', plugin_dir_url(__FILE__) . 'dist/main.min.js', [], null, true);
 		wp_enqueue_style('turbo-admin-styles', plugin_dir_url(__FILE__) . 'turbo-admin.css', []);
+
+		wp_localize_script( 'turbo-admin-scripts', 'wpTurboAdmin', [
+			'keys' => $shortcutKeys,
+		] );
 	}
 }
-
 
 add_action('admin_bar_menu', 'TurboAdmin\add_admin_bar_item', 1000);
 function add_admin_bar_item($admin_bar)
 {
+	$userShortcutKeys = userShortcutKeys();
+
+	$keysTextArray = [];
+
+	if ($userShortcutKeys['meta']) {
+		$keysTextArray[] = 'Cmd';
+	}
+	if ($userShortcutKeys['alt']) {
+		$keysTextArray[] = 'Alt';
+	}
+	if ($userShortcutKeys['ctrl']) {
+		$keysTextArray[] = 'Ctrl';
+	}
+	if ($userShortcutKeys['shift']) {
+		$keysTextArray[] = 'Shift';
+	}
+	$keysTextArray[] = strtoupper($userShortcutKeys['key']);
+
+	$keysText = implode('-', $keysTextArray);
+
 	$admin_bar->add_menu(array(
 		'id'    => 'turbo-admin',
 		'parent' => null,
@@ -49,7 +79,7 @@ function add_admin_bar_item($admin_bar)
 		'title' => '<span class="ab-icon" style="margin-right: 0;"><img src="' . plugin_dir_url(__FILE__) . '/images/snail.svg' . '" style="display: block; width: 24px; height: 24px;"></span>',
 		'href'  => null,
 		'meta' => [
-			'title' => __('Turbo admin is installed! Use Ctrl-Alt-Shift-P (or Cmd-Alt-Shift-P for Mac) to open the command palette.', 'turbo-admin'), //This title will show on hover
+			'title' => sprintf(__('Turbo admin is installed! Use %s to open the command palette.', 'turbo-admin'), $keysText), //This title will show on hover
 		]
 	));
 }
@@ -61,13 +91,7 @@ function show_profile_fields($user)
 {
 	$shortcut = get_user_meta($user->ID, 'turbo-admin-shortcut', true);
 	if (empty($shortcut)) {
-		$shortcut = [
-			'meta' => true,
-			'alt' => true,
-			'ctrl' => false,
-			'shift' => true,
-			'key' => 'P',
-		];
+		$shortcut = defaultShortcutKeys();
 	}
 ?>
 	<h3>Turbo Admin settings</h3>
@@ -77,7 +101,7 @@ function show_profile_fields($user)
 			<td>
 				<label style="margin-right: 18px;">
 					<input type="checkbox" name="turbo-admin-meta-key" <?php checked($shortcut['meta']) ?>></input>
-					Ctrl/Cmd
+					Cmd (Mac only)
 				</label>
 				<label style="margin-right: 18px;">
 					<input type="checkbox" name="turbo-admin-alt-key" <?php checked($shortcut['alt']) ?>></input>
@@ -119,4 +143,36 @@ function save_extra_profile_fields($user_id)
 	$shortcut['key'] = isset($_POST['turbo-admin-shortcut']) ? esc_attr($_POST['turbo-admin-shortcut']) : 'P';
 
 	update_user_meta($user_id, 'turbo-admin-shortcut', $shortcut);
+}
+
+/*
+ * This returns the user-specified key combo if set, or the default one if not
+ */
+function userShortcutKeys() {
+	$userShortcutKeys = get_user_meta(get_current_user_id(), 'turbo-admin-shortcut', true);
+
+	if (! $userShortcutKeys) {
+		return defaultShortcutKeys();
+	}
+
+	return $userShortcutKeys;
+}
+
+function defaultShortcutKeys() {
+	$shortcut = [
+		'meta' => false,
+		'alt' => true,
+		'ctrl' => true,
+		'shift' => true,
+		'key' => 'P',
+	];
+	if (isUserOnMacOs()) {
+		$shortcut['meta'] = true;
+		$shortcut['ctrl'] = false;
+	}
+	return $shortcut;
+}
+
+function isUserOnMacOs() {
+	return strpos($_SERVER['HTTP_USER_AGENT'], "Mac") !== false;
 }
