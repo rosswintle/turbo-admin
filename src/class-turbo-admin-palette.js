@@ -84,7 +84,6 @@ export default class TurboAdminPalette {
 	}
 
 	handleGlobalKey(e) {
-		console.log(e.code);
 		if (this.shortcutKeysPressed(e)) {
 			if (this.paletteShown()) {
 				this.hidePalette();
