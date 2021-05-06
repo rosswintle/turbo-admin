@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 5.7
 Tested up to: 5.7.1
 Requires PHP: 7.2
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -83,9 +83,14 @@ If you're reading this then you've probably already done step 1. So what are you
 
 == Changelog ==
 
+= 1.0.2 =
+* Really... I will!
+* Previously: User can now select keyboard shortcut to use
+
 = 1.0.1 =
 * Bump main version number
 * I'll get good at plugin releases one day!
+* Previously: User can now select keyboard shortcut to use
 
 = 1.0.0 =
 * User can now select keyboard shortcut to use
