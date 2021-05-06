@@ -1,6 +1,6 @@
 {
   "name": "turbo-admin",
-  "version": "0.1.5",
+  "version": "1.0.0",
   "main": "Gruntfile.js",
   "author": "Ross Wintle",
   "scripts": {

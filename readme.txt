@@ -1,10 +1,11 @@
 === Turbo Admin ===
 Contributors: magicroundabout
+Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
 Requires at least: 5.7
 Tested up to: 5.7.1
 Requires PHP: 7.2
-Stable tag: 0.1.5
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,11 +20,11 @@ Install, activate and then:
 * Windows: Ctrl-Alt-Shift-P (Linux also?)
 * Mac: Cmd-Alt-Shift-P
 
-(I'm working on the settings screen to customise this)
+You can customise the keyboard combination used in the settings in your user profile. Be careful not to choose a keyboard combination already used by your browser.
 
-Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P again
+Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P (or your custom key combination) again
 
-Hover over the snail in the admin bar for a reminder at any time.
+Hover over the snail in the admin bar for a reminder of your shortcut at any time.
 
 ## Turbo Admin: The command palette that gives super fast access to your WordPress Dashboard.
 
@@ -37,7 +38,7 @@ How am I supposed to work with this clutter?
 
 ## If the WordPress Dashboard is slowing you down, Turbo Admin is here to speed you up.
 
-A simple key-combination launches a command palette with all your menu items.
+A customisable key-combination launches a command palette with all your menu items.
 
 Fuzzy search helps you find items even when you're not sure what they are called.
 
@@ -49,6 +50,8 @@ Install... activate... work faster!
 
 Install the plugin and activate it and then press Ctrl-Alt-Shift-P (or Cmd-Alt-Shift-P on a Mac) to open the palette.
 
+The keyboard shortcut can be customised from settings in your user profile. Be careful not to choose a keyboard combination already used by your browser.
+
 You can:
  - type to filter the commands
  - use up and down arrows to select an item
@@ -57,12 +60,11 @@ You can:
 
 ## I'd love it if...
 
-Yeah, yeah, I know. This is a first version. I'll be letting you change the key combination and adding other new features soon.
+Yes, yes, there are lots of enhancements planned. Keep an eye out for updates.
 
 ## Do I really have to install this on EVERY site?
 
-It's funny you ask. I'm working on a browser extension that will let you have a command palette on every wp-admin without
-having to install anything!
+It's funny you ask. I'm working on a browser extension that will let you have a command palette on every wp-admin without having to install anything!
 
 == Installation ==
 
@@ -79,6 +81,9 @@ If you're reading this then you've probably already done step 1. So what are you
 1. The command palette in action
 
 == Changelog ==
+
+= 1.0.0 =
+* User can now select keyboard shortcut to use
 
 = 0.1.5 =
 * Shortcut keys will now close the palette as well as open it

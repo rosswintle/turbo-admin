@@ -22,7 +22,7 @@
  * - General refactor to objects
  * ✅ Check roles/permissions (not needed now we're pure JS)
  * ✅ Scroll selected item into view
- * - Allow user selectable keyboard shortcut
+ * ✅ Allow user selectable keyboard shortcut
  */
 
 namespace TurboAdmin;
@@ -94,29 +94,30 @@ function show_profile_fields($user)
 		$shortcut = defaultShortcutKeys();
 	}
 ?>
-	<h3>Turbo Admin settings</h3>
+	<h3><?php _e('Turbo Admin settings', 'turbo_admin') ?></h3>
 	<table class="form-table">
 		<tr>
 			<th><label for="turbo-admin-shortcut"><?php _e('Keyboard shortcut', 'turbo_admin') ?></label></th>
 			<td>
 				<label style="margin-right: 18px;">
 					<input type="checkbox" name="turbo-admin-meta-key" <?php checked($shortcut['meta']) ?>></input>
-					Cmd (Mac only)
+					<?php _e('Cmd (Mac only)', 'turbo_admin') ?>
 				</label>
 				<label style="margin-right: 18px;">
 					<input type="checkbox" name="turbo-admin-alt-key" <?php checked($shortcut['alt']) ?>></input>
-					Alt/option
+					<?php _e('Alt/option', 'turbo_admin') ?>
 				</label>
 				<label style="margin-right: 18px;">
 					<input type="checkbox" name="turbo-admin-ctrl-key" <?php checked($shortcut['ctrl']) ?>></input>
-					Ctrl
+					<?php _e('Ctrl', 'turbo_admin') ?>
 				</label>
 				<label style="margin-right: 18px;">
 					<input type="checkbox" name="turbo-admin-shift-key" <?php checked($shortcut['shift']) ?>></input>
-					Shift
+					<?php _e('Shift', 'turbo_admin') ?>
 				</label>
 				<input type="text" required name="turbo-admin-shortcut" id="turbo-admin-shortcut" minLength="1" maxLength="1" value="<?php echo esc_attr($shortcut['key']); ?>" class="regular-text" /><br />
-				<span class="description">Please enter the keyboard shortcut you want to use to activate the Turbo Admin command palette.</span>
+				<span class="description"><?php _e('Please enter the keyboard shortcut you want to use to activate the Turbo Admin command palette.<br>
+				Do not choose a keyboard combination that your browser already uses.', 'turbo_admin') ?></span>
 			</td>
 		</tr>
 	</table>
