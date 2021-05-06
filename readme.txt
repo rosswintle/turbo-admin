@@ -79,6 +79,7 @@ If you're reading this then you've probably already done step 1. So what are you
 == Screenshots ==
 
 1. The command palette in action
+2. Settings in the user profile page
 
 == Changelog ==
 
