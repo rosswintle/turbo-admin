@@ -4,6 +4,7 @@ import TurboAdmin from './class-turbo-admin.js';
 // it is sandboxed. So we can't check across the plugin/extension boundary here.
 globalThis.turboAdmin = null;
 globalThis.turboAdminOptions = {
+	// wpTurboAdmin is set using wp_localize_script
 	shortcutKeys: globalThis.wpTurboAdmin.keys
 }
 document.addEventListener('DOMContentLoaded', e => {
