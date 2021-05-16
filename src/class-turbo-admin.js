@@ -20,9 +20,26 @@
  *     }
  *   ],
  *   appendToElement {
- *     // Selector to define what to append the palette to
+ *     // Optional CSS selector to define what to append the palette to
  *     'body'
- *   }
+ *   },
+ *   extraItems: [
+ *     // Optional array of extra item configs used to generate new item objects
+ *     {
+ *       'detectType': 'url',
+ *       'detectPattern': 'wp-login',
+ *       'itemTitle': 'View/visit site',
+ *       'itemUrlFunction': () => this.home
+ *     },
+ *   ],
+ *   extraItemsRaw: [
+ *     // Optional array of raw item objects to be added
+ *     {
+ *       'title': ,
+ *       'action': ,
+ *       'parentTitle': ,
+ *     }
+ *   ]
  * }
  */
 import TurboAdminPalette from './class-turbo-admin-palette.js';
@@ -56,6 +73,8 @@ export default class TurboAdmin {
 		this.menu = this.getMenu();
 		// Add other additional items
 		this.addAdditionalMenuItems();
+		// Add items passed in using extraItemsRaw
+		this.menu = this.menu.concat(this.options.extraItemsRaw ?? []);
 		// Add palette markup to the DOM
 		this.addPalette();
 		// Initialise controls on the palette
@@ -121,51 +140,57 @@ export default class TurboAdmin {
 		 * ]
 		 */
 
-		let extraItems = [
-			{
-				'detectType': 'dom',
-				'detectSelector': 'body.wp-admin #wp-admin-bar-site-name-default a',
-				'itemTitleFunction': () => 'View/visit site',
-				'itemUrlFunction': (element) => element.href
-			},
-			{
-				'detectType': 'dom',
-				'detectSelector': '#wp-admin-bar-dashboard a',
-				'itemTitleFunction': (element) => element.textContent,
-				'itemUrlFunction': (element) => element.href
-			},
-			{
-				'detectType': 'dom',
-				'detectSelector': '#wpadminbar',
-				'itemTitleFunction': () => 'Logout',
-				'itemUrlFunction': () => document.getElementById('wp-admin-bar-logout')?.querySelector('a')?.href
-			},
-			{
-				'detectType': 'dom',
-				'detectSelector': '#wp-admin-bar-edit a',
-				'itemTitleFunction': (item) => item.textContent,
-				'itemUrlFunction': (item) => item.href
-			},
-			{
-				'detectType': 'dom',
-				'detectSelector': '#wp-admin-bar-customize a',
-				'itemTitleFunction': (item) => item.textContent,
-				'itemUrlFunction': (item) => item.href
-			},
-			{
-				'detectType': 'dom',
-				'detectSelectorNone': '#wpadminbar, #loginform',
-				'itemTitleFunction': () => "Log in",
-				'itemUrlFunction': () => document.querySelector('link[rel="https://api.w.org/"]')?.href?.replace('wp-json/', 'wp-admin/')
-			},
-			// This is on the login screen
-			{
-				'detectType': 'dom',
-				'detectSelector': '#backtoblog a',
-				'itemTitleFunction': () => "View/visit site",
-				'itemUrlFunction': (element) => element.href
-			}
-		];
+		// Get passed-in extraItems
+		let extraItems = this.options.extraItems ?? [];
+
+		// Merge in defaults
+		extraItems = extraItems.concat(
+			[
+				{
+					'detectType': 'dom',
+					'detectSelector': 'body.wp-admin #wp-admin-bar-site-name-default a',
+					'itemTitleFunction': () => 'View/visit site',
+					'itemUrlFunction': (element) => element.href
+				},
+				{
+					'detectType': 'dom',
+					'detectSelector': '#wp-admin-bar-dashboard a',
+					'itemTitleFunction': (element) => element.textContent,
+					'itemUrlFunction': (element) => element.href
+				},
+				{
+					'detectType': 'dom',
+					'detectSelector': '#wpadminbar',
+					'itemTitleFunction': () => 'Logout',
+					'itemUrlFunction': () => document.getElementById('wp-admin-bar-logout')?.querySelector('a')?.href
+				},
+				{
+					'detectType': 'dom',
+					'detectSelector': '#wp-admin-bar-edit a',
+					'itemTitleFunction': (item) => item.textContent,
+					'itemUrlFunction': (item) => item.href
+				},
+				{
+					'detectType': 'dom',
+					'detectSelector': '#wp-admin-bar-customize a',
+					'itemTitleFunction': (item) => item.textContent,
+					'itemUrlFunction': (item) => item.href
+				},
+				{
+					'detectType': 'dom',
+					'detectSelectorNone': '#wpadminbar, #loginform',
+					'itemTitleFunction': () => "Log in",
+					'itemUrlFunction': () => document.querySelector('link[rel="https://api.w.org/"]')?.href?.replace('wp-json/', 'wp-admin/')
+				},
+				// This is on the login screen
+				{
+					'detectType': 'dom',
+					'detectSelector': '#backtoblog a',
+					'itemTitleFunction': () => "View/visit site",
+					'itemUrlFunction': (element) => element.href
+				}
+			]
+		);
 
 		extraItems.forEach(item => {
 			let detected = false;
