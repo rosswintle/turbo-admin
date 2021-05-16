@@ -75,6 +75,8 @@ export default class TurboAdmin {
 		this.addAdditionalMenuItems();
 		// Add items passed in using extraItemsRaw
 		this.menu = this.menu.concat(this.options.extraItemsRaw ?? []);
+		// Sort the menu
+		this.menu.sort((a, b) => (a.parentTitle + a.title).localeCompare(b.parentTitle + b.title));
 		// Add palette markup to the DOM
 		this.addPalette();
 		// Initialise controls on the palette
