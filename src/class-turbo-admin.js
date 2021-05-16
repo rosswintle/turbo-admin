@@ -178,7 +178,7 @@ export default class TurboAdmin {
 		palette.appendChild(input);
 		palette.appendChild(list);
 
-		document.body.appendChild(container);
+		document.querySelector(this.options.appendToElement ?? 'body').appendChild(container);
 	}
 
 }
