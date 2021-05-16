@@ -111,7 +111,7 @@ export default class TurboAdmin {
 				'detectType': 'dom',
 				'detectSelector': '#wpadminbar',
 				'itemTitleFunction': () => 'Logout',
-				'itemUrlFunction': () => document.getElementById('wp-admin-bar-logout').querySelector('a').href
+				'itemUrlFunction': () => document.getElementById('wp-admin-bar-logout')?.querySelector('a')?.href
 			},
 			{
 				'detectType': 'dom',
@@ -129,7 +129,7 @@ export default class TurboAdmin {
 				'detectType': 'dom',
 				'detectSelectorNone': '#wpadminbar, #loginform',
 				'itemTitleFunction': () => "Log in",
-				'itemUrlFunction': () => document.querySelector('link[rel="https://api.w.org/"]')?.href.replace('wp-json/', 'wp-admin/')
+				'itemUrlFunction': () => document.querySelector('link[rel="https://api.w.org/"]')?.href?.replace('wp-json/', 'wp-admin/')
 			},
 			// This is on the login screen
 			{
