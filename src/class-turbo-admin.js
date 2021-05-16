@@ -97,7 +97,7 @@ export default class TurboAdmin {
 		let extraItems = [
 			{
 				'detectType': 'dom',
-				'detectSelector': '#wp-admin-bar-site-name-default a',
+				'detectSelector': 'body.wp-admin #wp-admin-bar-site-name-default a',
 				'itemTitleFunction': () => 'View/visit site',
 				'itemUrlFunction': (element) => element.href
 			},
