@@ -1,3 +1,30 @@
+/*
+ * This is the common Turbo Admin library.
+ *
+ * It's (currently) WordPress-specific, but can be loaded by
+ * either the Extension OR the Plugin
+ *
+ * It takes an options object:
+ *
+ * options: {
+ *   shortcutKeys: [
+ *     // Array of shortcut key definitions, like:
+ *     {
+ *       {
+ *         meta: false,
+ *         alt: true,
+ *         ctrl: true,
+ *         shift: true,
+ *         key: 'p'
+ *       }
+ *     }
+ *   ],
+ *   appendToElement {
+ *     // Selector to define what to append the palette to
+ *     'body'
+ *   }
+ * }
+ */
 import TurboAdminPalette from './class-turbo-admin-palette.js';
 import TurboAdminMenuItem from './class-turbo-admin-menu-item.js';
 
@@ -18,20 +45,20 @@ export default class TurboAdmin {
 		} else {
 			// If we're not in the backend then (in the extension at least) we
 			// could be on the front-end and not logged in, so check for an
-			// admin bar and bail if there isn't one.
-			//            if (! document.getElementById('wpadminbar')) {
-			//                return;
-			//            }
-
+			// admin bar and grab from that if there is one.
 			if (document.getElementById('wpadminbar')) {
 				this.siteUrl = document.getElementById('wp-admin-bar-dashboard').querySelector('a').href;
 				this.home = null; // Don't know how to detect this.
 			}
 		}
 
+		// Get the WordPress dashboard menu items
 		this.menu = this.getMenu();
+		// Add other additional items
 		this.addAdditionalMenuItems();
+		// Add palette markup to the DOM
 		this.addPalette();
+		// Initialise controls on the palette
 		this.turboAdminPalette = new TurboAdminPalette(this.menu, this.options);
 	}
 
