@@ -150,7 +150,7 @@ export default class TurboAdmin {
 			[
 				{
 					'detectType': 'dom',
-					'detectSelector': 'body.wp-admin #wp-admin-bar-site-name-default a',
+					'detectSelector': 'body.wp-admin #wp-admin-bar-view-site a',
 					'itemTitleFunction': () => 'View/visit site',
 					'itemUrlFunction': (element) => element.href
 				},
@@ -197,31 +197,39 @@ export default class TurboAdmin {
 					'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin a',
 					'itemTitleFunction': () => "Network admin",
 					'itemUrlFunction': (element) => element.href
+				},
+				{
+					'detectType': 'dom',
+					'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-my-sites-list .ab-submenu a',
+					'itemTitleFunction': (element) => "Sites: " + element.closest('.menupop').querySelector('a').innerText + ' - ' + element.innerText,
+					'itemUrlFunction': (element) => element.href
 				}
-				// TODO: Allow detectSelector to return multiple elements
 			]
 		);
 
 		extraItems.forEach(item => {
 			let detected = false;
-			let element = null;
+			let elements = null;
 			if (item.detectType === 'url') {
 				detected = Boolean(window.location.href.includes(item.detectPattern));
 			} else if (item.detectType === 'dom') {
 				if (item.detectSelector) {
-					element = document.querySelector(item.detectSelector);
-					detected = Boolean(element);
+					elements = document.querySelectorAll(item.detectSelector);
+					detected = Boolean(elements);
 				} else if (item.detectSelectorNone) {
-					element = document.querySelector(item.detectSelectorNone);
-					detected = !Boolean(element);
+					elements = document.querySelectorAll(item.detectSelectorNone);
+					detected = !Boolean(elements);
 				}
 			}
 			if (!detected) {
 				return;
 			}
-			this.menu.push(
-				new TurboAdminMenuItem(item.itemTitleFunction(element), item.itemUrlFunction(element), '')
-			);
+
+			elements.forEach(element => {
+				this.menu.push(
+					new TurboAdminMenuItem(item.itemTitleFunction(element), item.itemUrlFunction(element), '')
+				);
+			})
 		})
 	}
 
