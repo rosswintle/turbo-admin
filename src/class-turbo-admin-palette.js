@@ -40,6 +40,9 @@ export default class TurboAdminPalette {
 		// Add them to the DOM
 		this.updatePaletteItems();
 
+		// Set state
+		this.navigating = false;
+
 		this.paletteFuseOptions = [];
 		this.paletteFuse = null;
 
@@ -108,7 +111,7 @@ export default class TurboAdminPalette {
 					return keyPressed;
 				}
 				if (navigator.platform.startsWith('Mac')) {
-					if (combo.meta && ! keyEvent.metaKey) {
+					if (combo.meta && !keyEvent.metaKey) {
 						return false;
 					}
 				}
@@ -153,6 +156,7 @@ export default class TurboAdminPalette {
 	}
 
 	hidePalette() {
+		this.navigating = false;
 		this.paletteElement?.classList.remove('active');
 	}
 
@@ -189,6 +193,7 @@ export default class TurboAdminPalette {
 
 	moveDown() {
 		const nextItem = this.selectedItem.nextElementSibling;
+		this.navigating = true;
 		if (nextItem) {
 			this.selectedItem = nextItem;
 			this.setSelectedElement();
@@ -197,6 +202,7 @@ export default class TurboAdminPalette {
 
 	moveUp() {
 		const prevItem = this.selectedItem.previousElementSibling;
+		this.navigating = true;
 		if (prevItem) {
 			this.selectedItem = prevItem;
 			this.setSelectedElement();
@@ -234,7 +240,7 @@ export default class TurboAdminPalette {
 
 		this.paletteItemsElement.replaceChildren(...newItems.children);
 
-		if (!this.selectedItemDisplayed()) {
+		if (!this.navigating || !this.selectedItemDisplayed()) {
 			this.selectedItem = this.paletteItems[0];
 		}
 
