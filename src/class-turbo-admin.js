@@ -190,7 +190,15 @@ export default class TurboAdmin {
 					'detectSelector': '#backtoblog a',
 					'itemTitleFunction': () => "View/visit site",
 					'itemUrlFunction': (element) => element.href
+				},
+				// Multisite items
+				{
+					'detectType': 'dom',
+					'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin a',
+					'itemTitleFunction': () => "Network admin",
+					'itemUrlFunction': (element) => element.href
 				}
+				// TODO: Allow detectSelector to return multiple elements
 			]
 		);
 
