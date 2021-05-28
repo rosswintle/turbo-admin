@@ -194,8 +194,14 @@ export default class TurboAdmin {
                 // Multisite items
                 {
                     'detectType': 'dom',
-                    'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin a',
-                    'itemTitleFunction': () => "Network admin",
+                    'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin > a',
+                    'itemTitleFunction': () => "Network Admin",
+                    'itemUrlFunction': (element) => element.href
+                },
+                {
+                    'detectType': 'dom',
+                    'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin .ab-submenu a',
+                    'itemTitleFunction': (element) => 'Network Admin: ' + element.textContent,
                     'itemUrlFunction': (element) => element.href
                 },
                 {
