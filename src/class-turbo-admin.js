@@ -174,6 +174,18 @@ export default class TurboAdmin {
                 },
                 {
                     'detectType': 'dom',
+                    'detectSelector': '#wp-admin-bar-view a',
+                    'itemTitleFunction': (item) => item.textContent,
+                    'itemUrlFunction': (item) => item.href
+                },
+                {
+                    'detectType': 'dom',
+                    'detectSelector': '#wp-admin-bar-new-content .ab-submenu a',
+                    'itemTitleFunction': (item) => 'New ' + item.textContent,
+                    'itemUrlFunction': (item) => item.href
+                },
+                {
+                    'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-customize a',
                     'itemTitleFunction': (item) => item.textContent,
                     'itemUrlFunction': (item) => item.href
