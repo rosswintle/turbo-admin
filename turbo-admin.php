@@ -8,7 +8,7 @@
  * Author URI:      https://rosswintle.uk/
  * Text Domain:     turbo-admin
  * Domain Path:     /languages
- * Version:         1.0.2
+ * Version:         1.0.3
  *
  * @package         Turbo_Admin
  */

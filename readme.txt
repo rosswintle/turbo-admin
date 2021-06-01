@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 5.7
 Tested up to: 5.7.1
 Requires PHP: 7.2
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,6 +82,14 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.0.3 =
+* Some multisite support!!
+* Palette is now sorted alphabetically rather then by order items were discovered in the DOM
+* Slightly better search results and item-focussing rules
+* Add items to the palette, including some from the Toolbar, such as "Logout", "View post", "Edit post", "Customize", and all the "New..." items.
+* Internal refactoring
+* Remove debugging
 
 = 1.0.2 =
 * Really... I will!
