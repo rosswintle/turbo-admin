@@ -63,8 +63,17 @@ export default class TurboAdminPalette {
 		});
 
 		this.paletteElement.addEventListener('click', e => {
+			this.checkForPaletteItemClick(e);
 			this.checkForClickToClose(e);
 		});
+	}
+
+	isMac() {
+		return navigator.platform.startsWith('Mac');
+	}
+
+	metaPressed(e) {
+		return this.isMac() ? e.metaKey : e.ctrlKey;
 	}
 
 	buildPaletteItems() {
@@ -144,7 +153,7 @@ export default class TurboAdminPalette {
 			return;
 		}
 		if (e.code === 'Enter' && this.paletteShown()) {
-			this.doAction();
+			this.doAction(this.metaPressed(e));
 		}
 		this.paletteSearchAndUpdate();
 	}
@@ -162,6 +171,16 @@ export default class TurboAdminPalette {
 
 	paletteShown() {
 		return this.paletteElement?.classList.contains('active');
+	}
+
+	checkForPaletteItemClick(e) {
+		if (e.target.tagName === 'A') {
+			e.preventDefault();
+			this.selectedItem = e.target.closest('li');
+			this.setSelectedElement();
+
+			this.doAction(this.metaPressed(e));
+		}
 	}
 
 	checkForClickToClose(e) {
@@ -209,9 +228,16 @@ export default class TurboAdminPalette {
 		}
 	}
 
-	doAction() {
+	doAction(metaPressed = false) {
 		this.hidePalette();
-		this.selectedItem.querySelector('a').click();
+
+		const url = this.selectedItem.querySelector('a').href;
+
+		if (metaPressed) {
+			window.open(url, '_blank');
+		} else {
+			window.location = this.selectedItem.querySelector('a').href;
+		}
 	}
 
 	selectedItemDisplayed() {
