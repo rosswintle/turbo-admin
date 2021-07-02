@@ -194,7 +194,18 @@ export default class TurboAdmin {
                     'detectType': 'dom',
                     'detectSelectorNone': '#wpadminbar, #loginform',
                     'itemTitleFunction': () => "Log in",
-                    'itemUrlFunction': () => document.querySelector('link[rel="https://api.w.org/"]')?.href?.replace('wp-json/', 'wp-admin/')
+                    'itemUrlFunction': () => {
+                        const discoveredLink = document.querySelector('link[rel="https://api.w.org/"]')?.href;
+                        if (!discoveredLink) {
+                            return 'javascript:alert(\'Sorry, could not detect login URL.\')';
+                        }
+                        if (discoveredLink.includes('/wp-json')) {
+                            return discoveredLink.replace('wp-json/', 'wp-admin/');
+                        }
+                        if (discoveredLink.includes('index.php?rest_route')) {
+                            return discoveredLink.replace(/index.php\?rest_route.*/, 'wp-admin/');
+                        }
+                    }
                 },
                 // This is on the login screen
                 {
