@@ -34,14 +34,30 @@ export default class TurboAdminPalette {
 		// Get palette data
 		this.paletteData = paletteData;
 
+        // Get from localStorage
+        const savedData = window.localStorage.getItem('ta-palette-data');
+
+        if (null !== savedData) {
+            // Check for .logged-in class on body
+            if (document.body.classList.contains('logged-in')) {
+                // If still logged in merge (?) the items - need to be careful with post-specific ones?
+                // TODO: Cleverer merging
+                this.paletteData = JSON.parse(savedData);
+            }
+        }
+
+        // Save in localStorage
+        window.localStorage.setItem('ta-palette-data', JSON.stringify(this.paletteData));
+
 		// Convert into LI elements
 		this.paletteItems = this.buildPaletteItems();
+
 		this.selectedItem = this.paletteItems[0];
 		// Add them to the DOM
 		this.updatePaletteItems();
 
-		// Set state
-		this.navigating = false;
+        // Set state
+        this.navigating = false;
 
 		this.paletteFuseOptions = [];
 		this.paletteFuse = null;
@@ -64,17 +80,17 @@ export default class TurboAdminPalette {
 
 		this.paletteElement.addEventListener('click', e => {
 			this.checkForPaletteItemClick(e);
-			this.checkForClickToClose(e);
+            this.checkForClickToClose(e);
 		});
 	}
 
-	isMac() {
-		return navigator.platform.startsWith('Mac');
-	}
+    isMac() {
+        return navigator.platform.startsWith('Mac');
+    }
 
-	metaPressed(e) {
-		return this.isMac() ? e.metaKey : e.ctrlKey;
-	}
+    metaPressed(e) {
+        return this.isMac() ? e.metaKey : e.ctrlKey;
+    }
 
 	buildPaletteItems() {
 		const paletteItems = [];
@@ -120,7 +136,7 @@ export default class TurboAdminPalette {
 					return keyPressed;
 				}
 				if (navigator.platform.startsWith('Mac')) {
-					if (combo.meta && !keyEvent.metaKey) {
+					if (combo.meta && ! keyEvent.metaKey) {
 						return false;
 					}
 				}
@@ -153,7 +169,7 @@ export default class TurboAdminPalette {
 			return;
 		}
 		if (e.code === 'Enter' && this.paletteShown()) {
-			this.doAction(this.metaPressed(e));
+            this.doAction(this.metaPressed(e));
 		}
 		this.paletteSearchAndUpdate();
 	}
@@ -165,7 +181,7 @@ export default class TurboAdminPalette {
 	}
 
 	hidePalette() {
-		this.navigating = false;
+        this.navigating = false;
 		this.paletteElement?.classList.remove('active');
 	}
 
@@ -173,15 +189,15 @@ export default class TurboAdminPalette {
 		return this.paletteElement?.classList.contains('active');
 	}
 
-	checkForPaletteItemClick(e) {
-		if (e.target.tagName === 'A') {
-			e.preventDefault();
-			this.selectedItem = e.target.closest('li');
-			this.setSelectedElement();
+    checkForPaletteItemClick(e) {
+        if (e.target.tagName === 'A') {
+            e.preventDefault();
+            this.selectedItem = e.target.closest('li');
+            this.setSelectedElement();
 
-			this.doAction(this.metaPressed(e));
-		}
-	}
+            this.doAction(this.metaPressed(e));
+        }
+    }
 
 	checkForClickToClose(e) {
 		if (e.target.id === this.paletteElement.id) {
@@ -212,7 +228,7 @@ export default class TurboAdminPalette {
 
 	moveDown() {
 		const nextItem = this.selectedItem.nextElementSibling;
-		this.navigating = true;
+        this.navigating = true;
 		if (nextItem) {
 			this.selectedItem = nextItem;
 			this.setSelectedElement();
@@ -221,7 +237,7 @@ export default class TurboAdminPalette {
 
 	moveUp() {
 		const prevItem = this.selectedItem.previousElementSibling;
-		this.navigating = true;
+        this.navigating = true;
 		if (prevItem) {
 			this.selectedItem = prevItem;
 			this.setSelectedElement();
@@ -231,13 +247,13 @@ export default class TurboAdminPalette {
 	doAction(metaPressed = false) {
 		this.hidePalette();
 
-		const url = this.selectedItem.querySelector('a').href;
+        const url = this.selectedItem.querySelector('a').href;
 
-		if (metaPressed) {
-			window.open(url, '_blank');
-		} else {
-			window.location = this.selectedItem.querySelector('a').href;
-		}
+        if (metaPressed) {
+            window.open(url, '_blank');
+        } else {
+            window.location = this.selectedItem.querySelector('a').href;
+        }
 	}
 
 	selectedItemDisplayed() {
