@@ -83,6 +83,12 @@ If you're reading this then you've probably already done step 1. So what are you
 
 == Changelog ==
 
+= 1.0.4 =
+* Allow meta-click to open in new tab and improve mouse clicking
+* Improved styles
+* Initial go at caching commands for front-end
+* Improved login URL detection (only applies to browser extension)
+
 = 1.0.3 =
 * Some multisite support!!
 * Palette is now sorted alphabetically rather then by order items were discovered in the DOM
