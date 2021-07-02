@@ -5,6 +5,7 @@
 	position: fixed;
 	top: 0;
 	left: 0;
+    box-sizing: border-box;
 	width: 100vw;
 	height: 0vh;
 	flex-direction: column;
@@ -19,6 +20,11 @@
 	background-color: rgba(0, 0, 0, 0.4);
 	height: 100vh;
 	transition: background-color 0.3s;
+}
+
+#ta-command-palette-container * {
+    box-sizing: border-box;
+    -moz-osx-font-smoothing: auto;
 }
 
 #ta-command-palette {
@@ -49,6 +55,7 @@
 	border: 0 none;
 	border-radius: 6px;
 	font-size: inherit;
+    line-height: 2;
 	display: block;
 	margin: 0 0 0.8rem 0;
 	padding: 0.15rem 0.5rem;
@@ -61,6 +68,7 @@
 	position: relative;
 	background-color: #000;
 	font-size: inherit;
+    line-height: 1.3;
 	display: block;
 	margin: 0;
 	padding: 0;
@@ -90,18 +98,21 @@
 
 #ta-command-palette li {
 	display: block;
-	margin: 0;
-	padding: 0.5rem;
+	margin: 0 !important;
+	padding: 0.5rem !important;
 }
 
 #ta-command-palette a {
 	display: flex;
 	color: #FFF;
-	text-decoration: none;
+	text-decoration: none !important;
+    border: 0 none !important;
+    line-height: 1.3 !important;
+    font-weight: 400 !important;
 }
 
-#ta-command-palette li.selected {
-	display: flex;
+#ta-command-palette li.selected,
+#ta-command-palette li:hover {
 	padding: 0.5rem;
 	background-color: #2271b1;
 }
