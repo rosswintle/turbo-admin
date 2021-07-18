@@ -44,6 +44,8 @@
  */
 import TurboAdminPalette from './class-turbo-admin-palette.js';
 import TurboAdminMenuItem from './class-turbo-admin-menu-item.js';
+import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-editor-fullscreen-kill.js';
+import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
 
 export default class TurboAdmin {
 
@@ -54,33 +56,62 @@ export default class TurboAdmin {
         }
 
         this.options = options;
+        // Grab the global Wp object instance
+        this.wp = globalThis.taWp;
 
-        // Figure out the siteurl and home - this is different on the front and back end
-        if (this.isBackend()) {
-            this.siteUrl = window.location.href.match(/(^.*wp-admin)/)[1];
-            this.home = document.getElementById('wp-admin-bar-site-name').querySelector('a').href;
-        } else {
-            // If we're not in the backend then (in the extension at least) we
-            // could be on the front-end and not logged in, so check for an
-            // admin bar and grab from that if there is one.
-            if (document.getElementById('wpadminbar')) {
-                this.siteUrl = document.getElementById('wp-admin-bar-dashboard').querySelector('a').href;
-                this.home = null; // Don't know how to detect this.
+        this.menu = [];
+        // Check for saved menu when on front-end
+        if (! this.wp.isBackend) {
+            // Only use the cached items if the current URL matches the last site URL
+            // This handles changes of multi-site site!
+            // We ONLY need to do this on the front-end as the back-end will always
+            // refresh the menu.
+            if (! this.wp.siteChanged) {
+                // Get from localStorage
+                const savedMenu = window.localStorage.getItem('ta-palette-data');
+
+                if (null !== savedMenu) {
+                    // Check for .logged-in class on body
+                    if (document.body.classList.contains('logged-in')) {
+                        // If still logged in merge (?) the items
+                        this.menu = JSON.parse(savedMenu);
+                    }
+                }
             }
+        } else {
+            // On the back end, get the WordPress dashboard menu items
+            this.menu = this.getMenu();
         }
 
-        // Get the WordPress dashboard menu items
-        this.menu = this.getMenu();
         // Add other additional items
         this.addAdditionalMenuItems();
         // Add items passed in using extraItemsRaw
         this.menu = this.menu.concat(this.options.extraItemsRaw ?? []);
         // Sort the menu
         this.menu.sort((a, b) => (a.parentTitle + a.title).localeCompare(b.parentTitle + b.title));
+
+        // Filter out no-cache items and save to localStorage.
+        const itemsToSave = this.menu.filter(item => (! item.noCache));
+        window.localStorage.setItem('ta-palette-data', JSON.stringify(itemsToSave));
+
         // Add palette markup to the DOM
         this.addPalette();
         // Initialise controls on the palette
         this.turboAdminPalette = new TurboAdminPalette(this.menu, this.options);
+
+        if (true === this.options['block-editor-fullscreen-disable']) {
+            // Initialise fullscreen kill
+            this.turboAdminFullscreenKill = new TurboAdminWpBlockEditorFullscreenKill();
+        }
+
+        if (true === this.options['block-editor-welcome-screen-kill']) {
+            this.turboAdminWelcomeKill = new TurboAdminWpBlockEditorWelcomeGuideKill();
+        }
+
+        // Add other things if we're logged in and have an API nonce
+        if (globalThis.contentApi.userLoggedIn()) {
+            // What shall we do?
+        }
     }
 
     getMenu() {
@@ -114,10 +145,6 @@ export default class TurboAdmin {
             });
         }
         return items;
-    }
-
-    isBackend() {
-        return document.body.classList.contains('wp-admin');
     }
 
     addAdditionalMenuItems() {
@@ -170,13 +197,15 @@ export default class TurboAdmin {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-edit a',
                     'itemTitleFunction': (item) => item.textContent,
-                    'itemUrlFunction': (item) => item.href
+                    'itemUrlFunction': (item) => item.href,
+                    'noCache': true,
                 },
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-view a',
                     'itemTitleFunction': (item) => item.textContent,
-                    'itemUrlFunction': (item) => item.href
+                    'itemUrlFunction': (item) => item.href,
+                    'noCache': true,
                 },
                 {
                     'detectType': 'dom',
@@ -195,16 +224,11 @@ export default class TurboAdmin {
                     'detectSelectorNone': '#wpadminbar, #loginform',
                     'itemTitleFunction': () => "Log in",
                     'itemUrlFunction': () => {
-                        const discoveredLink = document.querySelector('link[rel="https://api.w.org/"]')?.href;
-                        if (!discoveredLink) {
-                            return 'javascript:alert(\'Sorry, could not detect login URL.\')';
+                        if (globalThis.taWp.home) {
+                            return globalThis.taWp.siteUrl;
                         }
-                        if (discoveredLink.includes('/wp-json')) {
-                            return discoveredLink.replace('wp-json/', 'wp-admin/');
-                        }
-                        if (discoveredLink.includes('index.php?rest_route')) {
-                            return discoveredLink.replace(/index.php\?rest_route.*/, 'wp-admin/');
-                        }
+                        // Try getting wp-admin
+                        return 'javascript:alert(\'Sorry, could not detect login URL.\')';
                     }
                 },
                 // This is on the login screen
@@ -257,24 +281,40 @@ export default class TurboAdmin {
             }
 
             elements.forEach(element => {
-                this.menu.push(
-                    new TurboAdminMenuItem(item.itemTitleFunction(element), item.itemUrlFunction(element), '')
-                );
-            })
+                const newItem = new TurboAdminMenuItem(item.itemTitleFunction(element), item.itemUrlFunction(element), '', item?.noCache);
+                // Might already have one so check.
+                if (this.menu.some(menuItem => {
+                    // This must be newItem.sameAs, not menuItem.sameAs because the menuItem
+                    // may have been loaded from saved menu and may not actually be an instance
+                    // of a TurboAdminMenuItem.
+                    return newItem.sameAs(menuItem)
+                } )) {
+                    return;
+                }
+                // We don't already have one. So add it.
+                this.menu.push(newItem);
+            });
         })
     }
 
     addPalette() {
+        // Container
         const container = document.createElement('div');
         container.id = 'ta-command-palette-container';
+        // Palette
         const palette = document.createElement('div');
         palette.id = 'ta-command-palette';
+        // Input field
         const input = document.createElement('input');
         input.id = "ta-command-palette-input";
         input.name = "ta-command-palette-input";
         input.type = "text";
+        // Set this to stop stuff trying to fill it.
+        input.setAttribute('autocomplete', 'off');
+        // List
         const list = document.createElement('ul');
         list.id = "ta-command-palette-items";
+        // Join it all up
         container.appendChild(palette);
         palette.appendChild(input);
         palette.appendChild(list);

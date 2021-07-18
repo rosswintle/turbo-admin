@@ -18,6 +18,7 @@
 
 import Fuse from './fuse-6.4.6.js';
 import TurboAdminMenuItem from './class-turbo-admin-menu-item';
+import ContentApi from './class-content-api.js';
 
 export default class TurboAdminPalette {
 
@@ -28,36 +29,33 @@ export default class TurboAdminPalette {
 		this.options = options;
 
 		this.paletteElement = document.getElementById('ta-command-palette-container');
+        this.paletteInnerElement = document.getElementById('ta-command-palette');
 		this.paletteInputElement = document.getElementById('ta-command-palette-input');
 		this.paletteItemsElement = document.getElementById('ta-command-palette-items');
 
 		// Get palette data
 		this.paletteData = paletteData;
 
-        // Get from localStorage
-        const savedData = window.localStorage.getItem('ta-palette-data');
+        // Get post type data from API
+        this.postTypes = [];
+        this.fetchPostTypes();
 
-        if (null !== savedData) {
-            // Check for .logged-in class on body
-            if (document.body.classList.contains('logged-in')) {
-                // If still logged in merge (?) the items - need to be careful with post-specific ones?
-                // TODO: Cleverer merging
-                this.paletteData = JSON.parse(savedData);
-            }
-        }
-
-        // Save in localStorage
-        window.localStorage.setItem('ta-palette-data', JSON.stringify(this.paletteData));
+        // Set empty contentItems
+        this.contentItems = [];
 
 		// Convert into LI elements
 		this.paletteItems = this.buildPaletteItems();
 
 		this.selectedItem = this.paletteItems[0];
+        this.openedSubMenu = null;
+        this.selectedSubItem = null;
+
 		// Add them to the DOM
 		this.updatePaletteItems();
 
         // Set state
         this.navigating = false;
+        this.debouncedUpdateFn = null;
 
 		this.paletteFuseOptions = [];
 		this.paletteFuse = null;
@@ -82,7 +80,16 @@ export default class TurboAdminPalette {
 			this.checkForPaletteItemClick(e);
             this.checkForClickToClose(e);
 		});
+
+        this.paletteItemsElement.addEventListener('mouseover', e => {
+            this.setHoveredItem(e.target);
+        });
 	}
+
+    htmlDecode(input) {
+        var doc = new DOMParser().parseFromString(input, "text/html");
+        return doc.documentElement.textContent;
+    }
 
     isMac() {
         return navigator.platform.startsWith('Mac');
@@ -90,6 +97,23 @@ export default class TurboAdminPalette {
 
     metaPressed(e) {
         return this.isMac() ? e.metaKey : e.ctrlKey;
+    }
+
+    fetchPostTypes() {
+        if (! globalThis.contentApi.active) {
+            this.postTypes = [];
+            return;
+        }
+
+        globalThis.contentApi.get('types').then(
+            response => {
+                response.json().then(
+                    types => {
+                        this.postTypes = types;
+                    }
+                );
+            }
+        );
     }
 
 	buildPaletteItems() {
@@ -108,6 +132,71 @@ export default class TurboAdminPalette {
 			paletteItems.push(li);
 		});
 
+        // We'll need this in the loop below.
+        const profileLinkElem = document.getElementById('wp-admin-bar-edit-profile');
+        let profileLink = null;
+        if (profileLinkElem) {
+            profileLink = profileLinkElem.querySelector('a').href;
+        }
+
+        if (this.contentItems && this.contentItems.length > 0) {
+            this.contentItems.forEach(item => {
+                const type = this.postTypes[item.subtype] ? this.postTypes[item.subtype].name : item.subtype;
+                const title = `${item.title} (${type})`;
+
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                const subMenu = document.createElement('div');
+                const subMenuTitle = document.createElement('div');
+                const subMenuItems = document.createElement('ul');
+                subMenu.classList.add('ta-submenu');
+                subMenuTitle.classList.add('ta-submenu-title');
+
+                subMenuTitle.textContent = this.htmlDecode(title);
+                subMenuItems.classList.add('ta-submenu-items');
+                subMenu.appendChild(subMenuTitle);
+                subMenu.appendChild(subMenuItems);
+
+                const subMenuItem1 = document.createElement('li');
+                const subMenuLink1 = document.createElement('a');
+                subMenuLink1.innerText = "View";
+                subMenuLink1.href = item.url;
+                subMenuItem1.appendChild(subMenuLink1);
+                subMenuItems.appendChild(subMenuItem1);
+
+                if (profileLink) {
+                    // Need to get edit URL. This seems like the best way for now.
+                    const editLink = profileLink.replace('profile.php', `post.php?post=${item.id}&action=edit`);
+
+                    const subMenuItem2 = document.createElement('li');
+                    const subMenuLink2 = document.createElement('a');
+                    subMenuLink2.innerText = "Edit";
+                    subMenuLink2.href = editLink;
+                    subMenuItem2.appendChild(subMenuLink2);
+                    subMenuItems.appendChild(subMenuItem2);
+                }
+
+                const subMenuItem3 = document.createElement('li');
+                const subMenuLink3 = document.createElement('a');
+                subMenuLink3.innerText = "Copy link";
+                // Because this is an href we're setting it gets URI encoded!
+                subMenuLink3.href = item.url;
+                subMenuLink3.setAttribute('data-action', 'clipboard');
+                subMenuItem3.appendChild(subMenuLink3);
+                subMenuItems.appendChild(subMenuItem3);
+
+
+                li.classList.add('ta-has-child-menu');
+
+                li.appendChild(a);
+                li.appendChild(subMenu);
+
+                a.href = item.url;
+                a.innerHTML = title;
+                paletteItems.push(li);
+            })
+        }
+
 		return paletteItems;
 	}
 
@@ -121,41 +210,69 @@ export default class TurboAdminPalette {
 		}
 
 		if (e.code === 'Escape' && this.paletteShown()) {
-			this.hidePalette();
+			if (this.isSubMenuOpen()){
+                this.closeSubMenu();
+            } else {
+                this.hidePalette();
+            }
 		}
 		// Disable keyUp and keyDown if palette shown
-		if ((e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Enter') && this.paletteShown()) {
+        // Arrow
+		if ((e.code === 'ArrowUp'
+            || e.code === 'ArrowDown'
+            || e.code === 'Enter') && this.paletteShown()) {
 			e.preventDefault();
 		}
 	}
 
 	shortcutKeysPressed(keyEvent) {
+        // The reduce here works through all the different possible key combos
+        // (more than one can be specified in options)
 		const keysPressed = this.options.shortcutKeys.reduce(
 			(keyPressed, combo) => {
 				if (keyPressed) {
 					return keyPressed;
 				}
-				if (navigator.platform.startsWith('Mac')) {
-					if (combo.meta && ! keyEvent.metaKey) {
-						return false;
-					}
-				}
-				if (combo.alt && !keyEvent.altKey) {
-					return false;
-				}
-				if (combo.shift && !keyEvent.shiftKey) {
-					return false;
-				}
-				if (combo.ctrl && !keyEvent.ctrlKey) {
-					return false;
-				}
-				if ('Key' + combo.key.toUpperCase() !== keyEvent.code) {
-					return false;
-				}
-				return true;
-			}, false);
+                return ((!navigator.platform.startsWith('Mac')) || (combo.meta === keyEvent.metaKey))
+                    && (combo.alt === keyEvent.altKey)
+                    && (combo.shift === keyEvent.shiftKey)
+                    && (combo.ctrl === keyEvent.ctrlKey)
+                    && keyEvent.code === 'Key' + combo.key.toUpperCase();
+            }, false);
 		return keysPressed;
 	}
+
+    debouncedPaletteSearchAndUpdate() {
+        if (null === this.debouncedUpdateFn) {
+            this.debouncedUpdateFn = this.debounce(this.paletteSearchAndUpdate)
+        }
+        this.debouncedUpdateFn();
+    }
+
+    debounce(fn) {
+        // Setup a timer
+        var timeout;
+
+        // Return a function to run debounced
+        return function () {
+
+            // Setup the arguments
+            var context = this;
+            var args = arguments;
+
+            // If there's a timer, cancel it
+            if (timeout) {
+                window.cancelAnimationFrame(timeout);
+            }
+
+            // Setup the new requestAnimationFrame()
+            timeout = window.requestAnimationFrame(function () {
+                fn.apply(context, args);
+            });
+
+        }
+
+    };
 
 	paletteActions(e) {
 		if (e.code === 'ArrowDown' && this.paletteShown()) {
@@ -170,6 +287,7 @@ export default class TurboAdminPalette {
 		}
 		if (e.code === 'Enter' && this.paletteShown()) {
             this.doAction(this.metaPressed(e));
+            return;
 		}
 		this.paletteSearchAndUpdate();
 	}
@@ -183,6 +301,9 @@ export default class TurboAdminPalette {
 	hidePalette() {
         this.navigating = false;
 		this.paletteElement?.classList.remove('active');
+        if (this.isSubMenuOpen()) {
+            this.closeSubMenu();
+        }
 	}
 
 	paletteShown() {
@@ -192,7 +313,11 @@ export default class TurboAdminPalette {
     checkForPaletteItemClick(e) {
         if (e.target.tagName === 'A') {
             e.preventDefault();
-            this.selectedItem = e.target.closest('li');
+            if (this.isSubMenuOpen()) {
+                this.selectedSubItem = e.target.closest('li');
+            } else {
+                this.selectedItem = e.target.closest('li');
+            }
             this.setSelectedElement();
 
             this.doAction(this.metaPressed(e));
@@ -206,13 +331,16 @@ export default class TurboAdminPalette {
 	}
 
 	setSelectedElement() {
-		this.paletteItemsElement?.querySelectorAll('li.selected')?.forEach(e => e.classList.remove('selected'));
-
-		if (this.selectedItem) {
-			this.selectedItem.classList.add('selected');
-			this.scrollList();
-		}
-
+        if (this.isSubMenuOpen()) {
+            this.paletteItemsElement?.querySelectorAll('.ta-submenu.active li.selected')?.forEach(e => e.classList.remove('selected'));
+            this.selectedSubItem.classList.add('selected');
+        } else {
+            this.paletteItemsElement?.querySelectorAll('li.selected')?.forEach(e => e.classList.remove('selected'));
+            if (this.selectedItem) {
+                this.selectedItem.classList.add('selected');
+                this.scrollList();
+            }
+        }
 	}
 
 	scrollList() {
@@ -226,48 +354,137 @@ export default class TurboAdminPalette {
 		}
 	}
 
+    setHoveredItem(element) {
+        // Only do this for li's
+        if ('LI' === element.tagName) {
+            this.navigating = true;
+            if (this.isSubMenuOpen()) {
+                this.selectedSubItem = element;
+            } else {
+                this.selectedItem = element;
+            }
+            this.setSelectedElement();
+        }
+    }
+
 	moveDown() {
-		const nextItem = this.selectedItem.nextElementSibling;
-        this.navigating = true;
-		if (nextItem) {
-			this.selectedItem = nextItem;
-			this.setSelectedElement();
-		}
+        if (this.isSubMenuOpen()) {
+            const nextItem = this.selectedSubItem.nextElementSibling;
+            this.navigating = true;
+            if (nextItem) {
+                this.selectedSubItem = nextItem;
+                this.setSelectedElement();
+            }
+        } else {
+            const nextItem = this.selectedItem.nextElementSibling;
+            this.navigating = true;
+            if (nextItem) {
+                this.selectedItem = nextItem;
+                this.setSelectedElement();
+            }
+        }
 	}
 
 	moveUp() {
-		const prevItem = this.selectedItem.previousElementSibling;
-        this.navigating = true;
-		if (prevItem) {
-			this.selectedItem = prevItem;
-			this.setSelectedElement();
-		}
-	}
+        if (this.isSubMenuOpen()) {
+            const prevItem = this.selectedSubItem.previousElementSibling;
+            this.navigating = true;
+            if (prevItem) {
+                this.selectedSubItem = prevItem;
+                this.setSelectedElement();
+            }
+        } else {
+            const prevItem = this.selectedItem.previousElementSibling;
+            this.navigating = true;
+            if (prevItem) {
+                this.selectedItem = prevItem;
+                this.setSelectedElement();
+            }
+        }
+    }
+
+    isSubMenuOpen() {
+        return null !== this.openedSubMenu;
+    }
+
+    openSubMenu(subMenuElement) {
+        // Set height in case main menu is smaller than sub menu
+        const subMenuHeight = subMenuElement.offsetHeight;
+        this.paletteItemsElement.style.minHeight = subMenuHeight + "px";
+        subMenuElement.classList.add('active');
+        this.selectedSubItem = subMenuElement.querySelector('li');
+        this.openedSubMenu = subMenuElement;
+        this.setSelectedElement();
+    }
+
+    closeSubMenu(subMenuElement = null) {
+        if (null === subMenuElement) {
+            subMenuElement = document.querySelector('.ta-submenu.active');
+        }
+        subMenuElement.classList.remove('active');
+        this.selectedSubItem.classList.remove('active');
+        this.paletteItemsElement.style.minHeight = 'auto';
+        this.selectedSubItem = null;
+        this.openedSubMenu = null;
+    }
 
 	doAction(metaPressed = false) {
-		this.hidePalette();
+        if (this.isSubMenuOpen()) {
+            this.actOnItem(this.selectedSubItem, metaPressed);
+            return;
+        }
+        if (this.selectedItem.classList.contains('ta-has-child-menu')) {
+            const subMenu = this.selectedItem.querySelector('.ta-submenu');
+            this.openSubMenu(subMenu);
+            return;
+        }
 
-        const url = this.selectedItem.querySelector('a').href;
+        this.actOnItem(this.selectedItem, metaPressed);
+    }
+
+    actOnItem(item, metaPressed) {
+        this.hidePalette();
+        const link = item.querySelector('a');
+        const url = link.href;
+
+        if ('clipboard' === link.dataset.action) {
+            navigator.clipboard.writeText(url);
+            return;
+        }
 
         if (metaPressed) {
             window.open(url, '_blank');
         } else {
-            window.location = this.selectedItem.querySelector('a').href;
+            window.location = url;
         }
-	}
+    }
 
 	selectedItemDisplayed() {
 		return Array.from(this.paletteItemsElement.childNodes).includes(this.selectedItem);
 	}
 
-	paletteSearchAndUpdate() {
-		this.paletteSearch();
+	async paletteSearchAndUpdate() {
+		await this.paletteSearch();
 		this.updatePaletteItems();
 	}
 
-	paletteSearch() {
-		this.paletteItems = this.buildPaletteItems();
+	async paletteSearch() {
+        // Don't search everything!
+        if (globalThis.contentApi.active && this.paletteInputElement.value.length > 2) {
+            this.paletteInnerElement.classList.add('loading');
+            const response = await globalThis.contentApi.get('search', { search: this.paletteInputElement.value, per_page: 100 });
+            this.contentItems = await response.json();
+            this.paletteInnerElement.classList.remove('loading');
+            // console.log(this.contentItems)
+        } else {
+            this.contentItems = [];
+        }
+
+        this.paletteItems = this.buildPaletteItems();
+
 		if (this.paletteInputElement.value !== '') {
+            // Reset the search to work on the new items
+            this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
 			this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
 		}
 	}
