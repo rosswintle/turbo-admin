@@ -2,14 +2,18 @@
 Contributors: magicroundabout
 Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
-Requires at least: 5.7
-Tested up to: 5.7.1
+Requires at least: 4.9
+Tested up to: 5.8
 Requires PHP: 7.2
-Stable tag: 1.0.3
+Stable tag: 1.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 The command palette that gives super fast access to your WordPress Dashboard.
+
+If you love this plugin, you can get Turbo Admin on ALL your sites, without needing to install the plugin, with the browser extension version!
+
+[Check out the Browser Extension](https://turbo-admin.com/)
 
 == Description ==
 
@@ -22,7 +26,7 @@ Install, activate and then:
 
 You can customise the keyboard combination used in the settings in your user profile. Be careful not to choose a keyboard combination already used by your browser.
 
-Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P (or your custom key combination) again
+Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P (or your custom key combination) again.
 
 Hover over the snail in the admin bar for a reminder of your shortcut at any time.
 
@@ -42,7 +46,7 @@ A customisable key-combination launches a command palette with all your menu ite
 
 Fuzzy search helps you find items even when you're not sure what they are called.
 
-If you've used AlfredApp or Spotlight or the command palette in your text editor or IDE, you'll know the benefits of a tool like this and you'll quickly feel at home.
+If you've used Alfred App or Spotlight or the command palette in your text editor or IDE, you'll know the benefits of a tool like this and you'll quickly feel at home.
 
 Install... activate... work faster!
 
@@ -56,15 +60,29 @@ You can:
  - type to filter the commands
  - use up and down arrows to select an item
  - press enter to select an item
- - hit escape (no too hard) to close the palette
+ - hit escape (not too hard) to close the palette
 
-## I'd love it if...
+You can also select items with your mouse/trackpad.
 
-Yes, yes, there are lots of enhancements planned. Keep an eye out for updates.
+If you hold Ctrl/Cmd when selecting an item it will open in a new tab/window (you may need to allow your browser to open popups).
+
+As well as commands, the plugin will also search content that is made available through the REST API (as long as the REST API can be discovered).
+
+## Commands aren't showing on the front end of the site.
+
+You need to be logged in for Turbo Admin to work.
+
+Commands are scraped from the menus on the WP Admin side and cached for use on the front end so if the palette is showing but with no commands you'll need to visit the Dashboard to get the menu cached.
+
+## Content search isn't working.
+
+This could be for several reasons, but it's dependent on the REST API being discoverable and the content you want to search being available in the API.
+
+It's known to not work in ClassicPress, when some security plugins hide the API's discovery, or when the API routes have been changed from the defaults.
 
 ## Do I really have to install this on EVERY site?
 
-It's funny you ask. I'm working on a browser extension that will let you have a command palette on every wp-admin without having to install anything!
+It's funny you ask. There's also a (paid-for) [browser extension](https://turbo-admin.com) that will let you have Turbo Admin on every wp-admin without having to install anything!
 
 == Installation ==
 
@@ -82,6 +100,11 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.5.0 =
+* Content search using REST API (where available and discoverable)
+* Disable full-screen block editor mode (only applies to browser extension)
+* Automatically dismiss block editor welcome screen (only applies to browser extension)
 
 = 1.0.4 =
 * Allow meta-click to open in new tab and improve mouse clicking
