@@ -35,7 +35,8 @@ export default class ContentApi {
         wpApiSettings = await this.store.get(this.storageKey);
         if (wpApiSettings
             && Object.keys(wpApiSettings).length !== 0
-            && wpApiSettings[this.storageKey]) {
+            && wpApiSettings[this.storageKey]
+            && 'object' === typeof(wpApiSettings[this.storageKey])) {
             // Get the key'ed item out of the object
             wpApiSettings = wpApiSettings[this.storageKey];
             this.apiRoot = wpApiSettings.root;
