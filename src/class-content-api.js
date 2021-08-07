@@ -33,7 +33,9 @@ export default class ContentApi {
         // Getting from extension storage returns a object with the key
         // as the key. Which is weird.
         wpApiSettings = await this.store.get(this.storageKey);
-        if (wpApiSettings && Object.keys(wpApiSettings).length !== 0) {
+        if (wpApiSettings
+            && Object.keys(wpApiSettings).length !== 0
+            && wpApiSettings[this.storageKey]) {
             // Get the key'ed item out of the object
             wpApiSettings = wpApiSettings[this.storageKey];
             this.apiRoot = wpApiSettings.root;
