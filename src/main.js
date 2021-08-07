@@ -35,7 +35,10 @@ document.addEventListener('DOMContentLoaded', async e => {
 	globalThis.turboAdminOptions = {};
 	globalThis.turboAdminOptions[taStorageKey] = {
 		// wpTurboAdmin is set using wp_localize_script
-		shortcutKeys: globalThis.wpTurboAdmin.keys
+		shortcutKeys: globalThis.wpTurboAdmin.keys,
+        // These don't apply to the plugin version
+        'block-editor-fullscreen-disable': false,
+        'block-editor-welcome-screen-kill': false,
 	}
 	await taInit(globalThis.turboAdminOptions);
 });

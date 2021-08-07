@@ -6,7 +6,7 @@ export default class ContentApi {
         // this.discoverApiRoot().then(e => null);
         // console.log('Discovered API base: ', this.apiBase);
         this.active = false;
-		this.store = new Storage();
+        this.store = new Storage();
     }
 
     async discoverApiRoot() {
