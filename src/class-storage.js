@@ -11,7 +11,7 @@ export default class Storage {
     async set(dataObject) {
         if ('undefined' === typeof (browser)) {
             const keys = Object.keys(dataObject);
-            keys.forEach(key => this.store.setItem(key, dataObject[key]));
+            keys.forEach(key => this.store.setItem(key, JSON.stringify(dataObject[key])));
         } else {
             await this.store.set(objectToSave);
         }
@@ -20,7 +20,17 @@ export default class Storage {
     async get(key) {
         if ('undefined' === typeof (browser)) {
             let returnObj = {};
-            returnObj[key] = this.store.getItem(key);
+            let item = this.store.getItem(key);
+            if (! item) {
+                return returnObj;
+            }
+            let itemObject = null;
+            try {
+                itemObject = JSON.parse(this.store.getItem(key));
+            } catch (e) {
+                itemObject = null;
+            }
+            returnObj[key] = itemObject;
             return returnObj;
         } else {
             return await this.store.get(key);
