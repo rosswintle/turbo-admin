@@ -68,7 +68,7 @@ function add_admin_bar_item($admin_bar)
 	if ($userShortcutKeys['shift']) {
 		$keysTextArray[] = 'Shift';
 	}
-	$keysTextArray[] = strtoupper($userShortcutKeys['key']);
+	$keysTextArray[] = $userShortcutKeys['key'] === ' ' ? 'Space' : strtoupper($userShortcutKeys['key']);
 
 	$keysText = implode('-', $keysTextArray);
 
