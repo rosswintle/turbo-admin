@@ -13,7 +13,7 @@ export default class Storage {
             const keys = Object.keys(dataObject);
             keys.forEach(key => this.store.setItem(key, JSON.stringify(dataObject[key])));
         } else {
-            await this.store.set(objectToSave);
+            await this.store.set(dataObject);
         }
     }
 
