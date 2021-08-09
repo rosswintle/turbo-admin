@@ -237,7 +237,10 @@ export default class TurboAdminPalette {
                     && (combo.alt === keyEvent.altKey)
                     && (combo.shift === keyEvent.shiftKey)
                     && (combo.ctrl === keyEvent.ctrlKey)
-                    && keyEvent.code === 'Key' + combo.key.toUpperCase();
+                    && (
+                        keyEvent.code === 'Key' + combo.key.toUpperCase()
+                        || (combo.key === ' ' && keyEvent.code.toUpperCase() === 'SPACE')
+                    );
             }, false);
 		return keysPressed;
 	}
