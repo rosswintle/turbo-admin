@@ -52,6 +52,10 @@ function add_admin_scripts()
 add_action('admin_bar_menu', 'TurboAdmin\add_admin_bar_item', 1000);
 function add_admin_bar_item($admin_bar)
 {
+    if (get_hide_icon(get_current_user_id()) == 1) {
+        return;
+    }
+
 	$userShortcutKeys = userShortcutKeys();
 
 	$keysTextArray = [];
@@ -87,12 +91,22 @@ function add_admin_bar_item($admin_bar)
 add_action('show_user_profile', 'TurboAdmin\show_profile_fields');
 add_action('edit_user_profile', 'TurboAdmin\show_profile_fields');
 
+function get_hide_icon($user_id) {
+    $hideIcon = get_user_meta($user_id, 'turbo-admin-hide-icon', true);
+    if ($hideIcon === "") {
+        // Not set - use default
+        $hideIcon = apply_filters('turbo_admin_hide_icon_default', 0, $user_id);
+    }
+    return $hideIcon;
+}
+
 function show_profile_fields($user)
 {
 	$shortcut = get_user_meta($user->ID, 'turbo-admin-shortcut', true);
 	if (empty($shortcut)) {
 		$shortcut = defaultShortcutKeys();
 	}
+    $hideIcon = get_hide_icon($user->ID);
 ?>
 	<h3><?php _e('Turbo Admin settings', 'turbo_admin') ?></h3>
 	<table class="form-table">
@@ -120,6 +134,20 @@ function show_profile_fields($user)
 				Do not choose a keyboard combination that your browser already uses.', 'turbo_admin') ?></span>
 			</td>
 		</tr>
+		<tr>
+			<th><label for="turbo-admin-hide-icon"><?php _e('Hide admin bar icon', 'turbo_admin') ?></label></th>
+			<td>
+                <?php $hideIcon; ?>
+				<label style="margin-right: 18px;">
+					<input type="radio" name="turbo-admin-hide-icon" value="1" <?php checked($hideIcon, 1) ?>></input>
+					<?php _e('Hide icon', 'turbo_admin') ?>
+				</label>
+				<label style="margin-right: 18px;">
+					<input type="radio" name="turbo-admin-hide-icon" value="0" <?php checked($hideIcon, 0) ?>></input>
+					<?php _e('Show icon', 'turbo_admin') ?>
+				</label>
+			</td>
+		</tr>
 	</table>
 
 <?php
@@ -144,6 +172,10 @@ function save_extra_profile_fields($user_id)
 	$shortcut['key'] = isset($_POST['turbo-admin-shortcut']) ? esc_attr($_POST['turbo-admin-shortcut']) : 'P';
 
 	update_user_meta($user_id, 'turbo-admin-shortcut', $shortcut);
+
+    if (isset($_POST['turbo-admin-hide-icon']) && in_array(intval($_POST['turbo-admin-hide-icon']), [0, 1], true) ) {
+        update_user_meta($user_id, 'turbo-admin-hide-icon', $_POST['turbo-admin-hide-icon']);
+    }
 }
 
 /*
