@@ -80,6 +80,26 @@ This could be for several reasons, but it's dependent on the REST API being disc
 
 It's known to not work in ClassicPress, when some security plugins hide the API's discovery, or when the API routes have been changed from the defaults.
 
+## Can I hide the icon in the admin bar?
+
+Yes, as of v1.5.3 there is an option to do this in each user's profile.
+
+If you want to hide the icon for all users, or based or their role or something
+then you can use the `turbo_admin_hide_icon_default` filter. This filter should:
+
+* Return 0 to show the icon
+* Return 1 to hide the icon
+
+This filter is a default and is overridden by the user's setting.
+
+```
+// Hide icon by default for everyone
+add_filter('turbo_admin_hide_icon_default', 'ta_hide_icon', 10, 2);
+function ta_hide_icon($hide, $user_id) {
+    return 1;
+}
+```
+
 ## Do I really have to install this on EVERY site?
 
 It's funny you ask. There's also a (paid-for) [browser extension](https://turbo-admin.com) that will let you have Turbo Admin on every wp-admin without having to install anything!
@@ -100,6 +120,9 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.5.3 =
+* Allow icon in admin bar to be hidden
 
 = 1.5.2 =
 * Proper bugfix - content search now works on front-end!
