@@ -256,6 +256,13 @@ export default class TurboAdmin {
                     'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-my-sites-list .ab-submenu a',
                     'itemTitleFunction': (element) => "Sites: " + element.closest('.menupop').querySelector('a').innerText + ' - ' + element.innerText,
                     'itemUrlFunction': (element) => element.href
+                },
+                // WooCommerce Specific
+                {
+                    'detectType': 'dom',
+                    'detectSelector': '.woocommerce_page_wc-settings .woo-nav-tab-wrapper a.nav-tab',
+                    'itemTitleFunction': (element) => 'WooCommerce Settings: ' + element.textContent,
+                    'itemUrlFunction': (element) => element.href
                 }
             ]
         );
