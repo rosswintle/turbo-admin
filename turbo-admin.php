@@ -30,6 +30,9 @@ namespace TurboAdmin;
 add_action('admin_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
 add_action('wp_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
 
+define('TURBO_ADMIN_HIDE_ICON_META_NAME', 'turbo-admin-hide-icon');
+define('TURBO_ADMIN_SHORTCUT_META_NAME', 'turbo-admin-shortcut');
+
 function add_admin_scripts()
 {
 	if (is_user_logged_in()) {
@@ -92,7 +95,8 @@ add_action('show_user_profile', 'TurboAdmin\show_profile_fields');
 add_action('edit_user_profile', 'TurboAdmin\show_profile_fields');
 
 function get_hide_icon($user_id) {
-    $hideIcon = get_user_meta($user_id, 'turbo-admin-hide-icon', true);
+    $hideIcon = get_user_meta($user_id, TURBO_ADMIN_HIDE_ICON_META_NAME, true);
+
     if ($hideIcon === "") {
         // Not set - use default
         $hideIcon = apply_filters('turbo_admin_hide_icon_default', 0, $user_id);
@@ -102,7 +106,7 @@ function get_hide_icon($user_id) {
 
 function show_profile_fields($user)
 {
-	$shortcut = get_user_meta($user->ID, 'turbo-admin-shortcut', true);
+	$shortcut = get_user_meta($user->ID, TURBO_ADMIN_SHORTCUT_META_NAME, true);
 	if (empty($shortcut)) {
 		$shortcut = defaultShortcutKeys();
 	}
@@ -137,7 +141,6 @@ function show_profile_fields($user)
 		<tr>
 			<th><label for="turbo-admin-hide-icon"><?php _e('Hide admin bar icon', 'turbo_admin') ?></label></th>
 			<td>
-                <?php $hideIcon; ?>
 				<label style="margin-right: 18px;">
 					<input type="radio" name="turbo-admin-hide-icon" value="1" <?php checked($hideIcon, 1) ?>></input>
 					<?php _e('Hide icon', 'turbo_admin') ?>
@@ -171,10 +174,10 @@ function save_extra_profile_fields($user_id)
 	$shortcut['shift'] = isset($_POST['turbo-admin-shift-key']);
 	$shortcut['key'] = isset($_POST['turbo-admin-shortcut']) ? esc_attr($_POST['turbo-admin-shortcut']) : 'P';
 
-	update_user_meta($user_id, 'turbo-admin-shortcut', $shortcut);
+	update_user_meta($user_id, TURBO_ADMIN_SHORTCUT_META_NAME, $shortcut);
 
     if (isset($_POST['turbo-admin-hide-icon']) && in_array(intval($_POST['turbo-admin-hide-icon']), [0, 1], true) ) {
-        update_user_meta($user_id, 'turbo-admin-hide-icon', $_POST['turbo-admin-hide-icon']);
+        update_user_meta($user_id, TURBO_ADMIN_HIDE_ICON_META_NAME, $_POST['turbo-admin-hide-icon']);
     }
 }
 
@@ -182,7 +185,7 @@ function save_extra_profile_fields($user_id)
  * This returns the user-specified key combo if set, or the default one if not
  */
 function userShortcutKeys() {
-	$userShortcutKeys = get_user_meta(get_current_user_id(), 'turbo-admin-shortcut', true);
+	$userShortcutKeys = get_user_meta(get_current_user_id(), TURBO_ADMIN_SHORTCUT_META_NAME, true);
 
 	if (! $userShortcutKeys) {
 		return defaultShortcutKeys();
