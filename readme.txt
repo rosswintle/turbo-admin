@@ -92,13 +92,13 @@ then you can use the `turbo_admin_hide_icon_default` filter. This filter should:
 
 This filter is a default and is overridden by the user's setting.
 
-```
+`
 // Hide icon by default for everyone
 add_filter('turbo_admin_hide_icon_default', 'ta_hide_icon', 10, 2);
 function ta_hide_icon($hide, $user_id) {
     return 1;
 }
-```
+`
 
 ## Do I really have to install this on EVERY site?
 
