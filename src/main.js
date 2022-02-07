@@ -56,6 +56,13 @@ document.addEventListener('DOMContentLoaded', async e => {
         // These don't apply to the plugin version
         'block-editor-fullscreen-disable': false,
         'block-editor-welcome-screen-kill': false,
+        'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['list-table-keyboard-shortcuts'],
+        'live-dev-notice': globalThis.wpTurboAdmin['live-dev-notice'],
+        'hide-notices': true,
+        // 'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['list-table-keyboard-shortcuts'],
+        // 'live-dev-notice': globalThis.wpTurboAdmin['live-dev-notice'],
+        // 'hide-notices': globalThis.wpTurboAdmin['hide-notices']
+        'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array()
 	}
 	await taInit(globalThis.turboAdminOptions);
 });
