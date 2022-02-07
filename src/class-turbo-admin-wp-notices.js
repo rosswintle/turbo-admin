@@ -12,7 +12,7 @@ export default class TurboAdminWpNotices {
         }
 
         /*
-        * These are the global notice selectors
+        * These are the global notice selectors - these are always hidden
         */
         this.noticeSelectors = [
             '#wpbody-content > .notice',
@@ -121,7 +121,7 @@ console.log('Notices', notices);
         }
 
         /**
-         * Add button
+         * Add button.
          */
         /** @type {HTMLButtonElement} */
         const noticesButton = document.createElement('button');
@@ -160,6 +160,8 @@ console.log('Notices', notices);
         noticesPanelInner.id = 'ta-notices-panel-inner';
 
         noticesToHide.forEach(notice => {
+            // Add 'inline' class otherwise WordPress might move them around!
+            notice.classList.add('inline');
             // See Toolbelt's implementation: https://github.com/BinaryMoon/wp-toolbelt/blob/dev/modules/tidy-notifications/src/js/script.js
             noticesPanelInner.append(notice);
         });
@@ -201,10 +203,21 @@ console.log('Notices', notices);
         this.updateScreenMetaHeight();
 
         countElem.innerText = parseInt(countElem.innerText, 10) + 1;
-        browser.runtime.sendMessage({
-            'action': 'rememberNotice',
-            'noticeId': noticeId,
-        });
+
+        this.saveRememberedNotice(noticeId);
+    }
+
+    saveRememberedNotice(noticeId) {
+        this.rememberedNoticeIds.push(noticeId);
+
+        if ('object' === typeof(browser)) {
+            browser.runtime.sendMessage({
+                'action': 'rememberNotice',
+                'noticeId': noticeId,
+            });
+        } else {
+            window.localStorage.setItem('rememberedNoticeIds', JSON.stringify(this.rememberedNoticeIds));
+        }
     }
 
     forgetNotice(ev) {
@@ -234,11 +247,24 @@ console.log('Notices', notices);
         // }
 
         countElem.innerText = (count - 1).toString();
-        browser.runtime.sendMessage({
-            'action': 'forgetNotice',
-            'noticeId': noticeId,
-        });
+        this.saveForgottenNotice(noticeId);
     }
+
+    saveForgottenNotice(noticeId) {
+        this.rememberedNoticeIds.push(noticeId);
+
+        if ('object' === typeof(browser)) {
+            browser.runtime.sendMessage({
+                'action': 'rememberNotice',
+                'noticeId': noticeId,
+            });
+        } else {
+            this.rememberedNoticeIds = this.rememberedNoticeIds.filter( id => id !== noticeId );
+            window.localStorage.setItem('rememberedNoticeIds', JSON.stringify(this.rememberedNoticeIds));
+        }
+    }
+
+
 
     /*
      * For notices without IDs we'll see if we can add an ID that's a hash of their classlist
@@ -252,7 +278,23 @@ console.log('Notices', notices);
         notice.id = Array.from(notice.classList).join('-');
     }
 
+    /**
+     * Detect if WordPress has already applied event handlers to our new screen meta button.
+     *
+     * If it has then WordPress/backbone.js will handle the animation and we won't have to.
+     *
+     * @returns {boolean}
+     */
+    wordpressScreenMetaEventsExist() {
+        return 'object' === typeof(window.screenMeta) && window.screenMeta.toggles.filter('#ta-notices-link').length > 0;
+    }
+
     updateScreenMetaHeight() {
+        // Don't do this if we're relying on backbone's animation
+        if (this.wordpressScreenMetaEventsExist()) {
+            return;
+        }
+
         const screenMeta = document.getElementById('screen-meta');
         const noticesPanel = document.getElementById('ta-notices-wrap');
         const height = noticesPanel.offsetHeight;
@@ -260,6 +302,12 @@ console.log('Notices', notices);
     }
 
     toggleNoticesPanel(ev) {
+        // We may be in the plugin in which case we don't want to run our handler if there's
+        // a backbone handler on the button.
+        if (this.wordpressScreenMetaEventsExist()) {
+            return;
+        }
+        // Otherwise we mimic the swipe down animation.
         const animationSeconds = 0.3;
         const screenMeta = document.getElementById('screen-meta');
         const noticesPanel = document.getElementById('ta-notices-wrap');
