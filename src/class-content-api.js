@@ -7,6 +7,10 @@ export default class ContentApi {
         // console.log('Discovered API base: ', this.apiBase);
         this.active = false;
         this.store = new Storage();
+
+        // This is used to "cache" duplicate requests.
+        // It's an object because it will have search strings as keys
+        this.cache = {};
     }
 
     async discoverApiRoot() {
@@ -78,10 +82,56 @@ export default class ContentApi {
         const params = new URLSearchParams();
 
         Object.keys(data).forEach(paramKey => {
-            params.append(paramKey, data[paramKey]);
+            // Handle arrays
+            if (Array.isArray(data[paramKey])) {
+                const arrayParamKey = paramKey + '[]';
+                data[paramKey].forEach( item => params.append(arrayParamKey, item));
+            } else {
+                params.append(paramKey, data[paramKey]);
+            }
         });
 
         return params.toString();
+    }
+
+    statuses() {
+        if (this.apiNonce) {
+            return ["publish", "future", "draft", "pending", "private"];
+        } else {
+            return ["publish"];
+        }
+    }
+
+    types() {
+        return globalThis.turboAdmin.turboAdminPalette.postTypes;
+    }
+
+    async getPosts(searchString) {
+        // Check the cache
+        if (undefined !== this.cache[searchString]) {
+            return this.cache[searchString];
+        }
+
+        // Fetch results
+        const response = await this.get(
+            // "posts",
+            "search",
+            {
+                search: searchString,
+                per_page: 100,
+                // status: this.statuses(),
+                type: 'post',
+                subtype: 'any'
+            }
+        );
+
+        // Decode JSON
+        const result = await response.json();
+
+        // Store in the cache
+        this.cache[searchString] = result;
+
+        return result;
     }
 
     async get(path, data = {}) {
