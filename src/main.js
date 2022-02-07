@@ -56,11 +56,11 @@ document.addEventListener('DOMContentLoaded', async e => {
         // These don't apply to the plugin version
         'block-editor-fullscreen-disable': false,
         'block-editor-welcome-screen-kill': false,
-        'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['list-table-keyboard-shortcuts'],
-        'live-dev-notice': globalThis.wpTurboAdmin['live-dev-notice'],
+        // I don't think we'll do this in the plugin as the code would be SO different.
+        // 'live-dev-notice': globalThis.wpTurboAdmin['live-dev-notice'],
+        'list-table-keyboard-shortcuts': true,
         'hide-notices': true,
         // 'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['list-table-keyboard-shortcuts'],
-        // 'live-dev-notice': globalThis.wpTurboAdmin['live-dev-notice'],
         // 'hide-notices': globalThis.wpTurboAdmin['hide-notices']
         'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array()
 	}
