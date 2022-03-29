@@ -3,15 +3,28 @@ Contributors: magicroundabout
 Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
 Requires at least: 4.9
-Tested up to: 5.8
+Tested up to: 5.9
 Requires PHP: 7.2
-Stable tag: 1.5.3
+Stable tag: 1.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-The command palette that gives super fast access to your WordPress Dashboard.
+Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
 
-If you love this plugin, you can get Turbo Admin on ALL your sites, without needing to install the plugin, with the browser extension version!
+Main features are:
+ - Fast-action, keyboard driven command palette: Think Apple Spotlight, or Alfred, but in WordPress!
+ - (Experimental) Notice hiding: Tidy your dashboard by hiding admin notices in a separate, slide-out panel.
+ - (Experimental/Bets): List table keyboard shortcuts.
+
+If you love this plugin, you can get Turbo Admin on ALL your sites without needing to install the plugin, with the browser extension version!
+
+PLUS the browser extension has features not present in the plugin because, well, they only make sense in the extension!
+
+ - Full screen block editor killer
+ - Block editor welcome guide remover
+ - Live/dev site labels
+
+Remember, in the browser extension it works everywhere that it can detect WordPress without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
 
 [Check out the Browser Extension](https://turbo-admin.com/)
 

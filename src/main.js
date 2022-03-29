@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', async e => {
         'block-editor-welcome-screen-kill': false,
         // I don't think we'll do this in the plugin as the code would be SO different.
         'live-dev-notice': false,
-        'list-table-keyboard-shortcuts': true,
-        'hide-notices': true,
+        'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['listTableShortcuts'] === '1',
+        'hide-notices': globalThis.wpTurboAdmin['hideNotices'] === '1',
         'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array()
 	}
 	await taInit(globalThis.turboAdminOptions);
