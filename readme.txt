@@ -11,6 +11,8 @@ License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
+Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
+
 Ugh, this Dashboard menu is so cluttered?
 
 Where is everything?
@@ -20,8 +22,6 @@ Is it in Tools? Or Settings? Or some menu of it's own?
 How am I supposed to work with this clutter?
 
 ## If the WordPress Dashboard is slowing you down, Turbo Admin is here to speed you up.
-
-Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
 
 Turbo Admin's main features are:
 
