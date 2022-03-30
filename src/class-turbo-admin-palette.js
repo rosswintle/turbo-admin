@@ -183,7 +183,7 @@ export default class TurboAdminPalette {
             contentItems.forEach(item => {
                 const itemTitle = item.title;
                 // const itemTitle = item.title.rendered;
-                const itemType = item.type;
+                const itemType = item.subtype;
                 const itemUrl = item.url;
 
                 // console.log('Adding item: ' + itemTitle);
@@ -371,6 +371,7 @@ export default class TurboAdminPalette {
 
 	showPalette() {
 		this.paletteInputElement.value = '';
+        this.paletteItemsElement.scrollTop = 0;
 		this.paletteElement?.classList.add('active');
 		this.paletteInputElement?.focus();
 	}
@@ -378,6 +379,8 @@ export default class TurboAdminPalette {
 	hidePalette() {
         this.navigating = false;
 		this.paletteElement?.classList.remove('active');
+        this.paletteInputElement.value = '';
+        this.paletteInputElement.blur();
         if (this.isSubMenuOpen()) {
             this.closeSubMenu();
         }
@@ -490,13 +493,14 @@ export default class TurboAdminPalette {
         this.paletteItemsElement.style.minHeight = subMenuHeight + "px";
         subMenuElement.classList.add('active');
 
-        this.paletteInputElement.disabled = true;
-        // Blur the input so that keys can continue to be captured
-        this.paletteInputElement.blur();
 
         this.selectedSubItem = subMenuElement.querySelector('li');
         this.openedSubMenu = subMenuElement;
         this.setSelectedElement();
+
+        this.paletteInputElement.disabled = true;
+        // Blur the input so that keys can continue to be captured
+        this.paletteInputElement.blur();
     }
 
     closeSubMenu(subMenuElement = null) {

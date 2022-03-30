@@ -16,9 +16,6 @@ async function taInit(settings) {
         console.log('Weird. Turbo Admin could not find any settings');
         return;
     }
-// document.addEventListener('DOMContentLoaded', e => {
-// 	turboAdmin = new TurboAdmin(globalThis.turboAdminOptions);
-// });
 
     globalThis.turboAdminOptions = settings[taStorageKey];
 
@@ -60,7 +57,9 @@ document.addEventListener('DOMContentLoaded', async e => {
         'live-dev-notice': false,
         'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['listTableShortcuts'] === '1',
         'hide-notices': globalThis.wpTurboAdmin['hideNotices'] === '1',
-        'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array()
+        'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array(),
+        'barkeeper': true,
+        'admin-bar-search': true
 	}
 	await taInit(globalThis.turboAdminOptions);
 });
