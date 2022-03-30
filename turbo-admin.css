@@ -206,3 +206,105 @@
     margin: 0;
     padding: 0;
 }
+
+/* Notices panel */
+
+/* Initial cloak of notices */
+body.wp-admin #wpbody-content > .notice:not('.notice-success, .notice-error, .notice-failure'),
+body.wp-admin #wpbody-content > .wrap > .notice:not('.notice-success, .notice-error, .notice-failure') {
+    transition: max-height 0.2s;
+    max-height: 0;
+}
+
+#ta-notice-count {
+    display: inline-block;
+    vertical-align: top;
+    box-sizing: border-box;
+    margin: 1px 0 -1px 2px;
+    padding: 0 5px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background-color: #d63638;
+    color: #fff;
+    font-size: 11px;
+    line-height: 1.6;
+    text-align: center;
+    z-index: 26;
+}
+
+#ta-notices-panel-inner {
+    padding: 25px;
+}
+
+#ta-notices-panel-inner > * {
+    margin-right: 0;
+    margin-left: 0;
+    margin-top: 25px;
+}
+#ta-notices-panel-inner > *:first-child {
+    margin-top: 0;
+}
+
+/* Is it OK to do this? This class is added by the TA JS */
+.ta-added-pos-relative {
+    position: relative !important;
+}
+
+.ta-remember-notice-button,
+.ta-forget-notice-button {
+    outline: none;
+    position: absolute;
+    right: 5px;
+    bottom: 0;
+    transform: translateY(50%);
+    background-color: white;
+    background-image: none;
+    border: 1px solid #c3c4c7;
+    z-index: 10;
+    padding: 3px 8px;
+}
+.ta-forget-notice-button {
+    display: none;
+}
+
+/* Hide the button when it's in the panel */
+#ta-notices-panel-inner .ta-remember-notice-button {
+    display: none;
+}
+/* Show this button when in the panel */
+#ta-notices-panel-inner .ta-forget-notice-button {
+    display: block;
+}
+
+#wpadminbar #ta-notice-count {
+    display: inline-block;
+    background-color: #ca4a1f;
+    color: #FFF;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 18px;
+    padding: 0 7px;
+    line-height: 18px;
+    text-align: center;
+}
+
+/* Admin bar icon for notices */
+#wpadminbar #wp-admin-bar-ta-notices .ab-icon:before {
+    content: "\f16d";
+    top: 2px;
+}
+#wpadminbar #wp-admin-bar-ta-notices .ab-label {
+    height: 20px !important;
+    line-height: 20px !important;
+}
+#wpadminbar #wp-admin-bar-ta-notices .ab-item:hover .ab-label {
+    color: rgb(240, 240, 241) !important;
+}
+
+/**
+ * List tables
+ */
+.ta-active-table-row {
+    background-color: #ddd !important;
+}

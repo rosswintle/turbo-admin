@@ -44,8 +44,11 @@
  */
 import TurboAdminPalette from './class-turbo-admin-palette.js';
 import TurboAdminMenuItem from './class-turbo-admin-menu-item.js';
+import Acf from './class-acf.js';
 import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-editor-fullscreen-kill.js';
 import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
+import TurboAdminWpNotices from './class-turbo-admin-wp-notices.js';
+import TurboAdminListTableShortcuts from './class-list-table-shortcuts.js';
 
 export default class TurboAdmin {
 
@@ -56,6 +59,9 @@ export default class TurboAdmin {
         }
 
         this.options = options;
+    }
+
+    async init() {
         // Grab the global Wp object instance
         this.wp = globalThis.taWp;
 
@@ -87,6 +93,23 @@ export default class TurboAdmin {
         this.addAdditionalMenuItems();
         // Add items passed in using extraItemsRaw
         this.menu = this.menu.concat(this.options.extraItemsRaw ?? []);
+
+        // Add ACF items?
+        // TODO: Make this better. Possible ASYNC somehow?
+        // this.acf = new Acf();
+        // if (this.acf.isAcfInstalled()) {
+        //     const acfLinks = await this.acf.getFieldGroups()
+        //     // console.table(acfItems);
+        //     const acfMenuItems = acfLinks.map(
+        //         item => new TurboAdminMenuItem(
+        //             item.label + ' (ACF)',
+        //             item.link,
+        //             ''
+        //         )
+        //     );
+        //     this.menu = this.menu.concat(acfMenuItems);
+        // }
+
         // Sort the menu
         this.menu.sort((a, b) => (a.parentTitle + a.title).localeCompare(b.parentTitle + b.title));
 
@@ -106,6 +129,10 @@ export default class TurboAdmin {
 
         if (true === this.options['block-editor-welcome-screen-kill']) {
             this.turboAdminWelcomeKill = new TurboAdminWpBlockEditorWelcomeGuideKill();
+        }
+
+        if (true === this.options['list-table-keyboard-shortcuts']) {
+            this.turboAdminListTableShortcuts = new TurboAdminListTableShortcuts();
         }
 
         // Add other things if we're logged in and have an API nonce
@@ -256,6 +283,31 @@ export default class TurboAdmin {
                     'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-my-sites-list .ab-submenu a',
                     'itemTitleFunction': (element) => "Sites: " + element.closest('.menupop').querySelector('a').innerText + ' - ' + element.innerText,
                     'itemUrlFunction': (element) => element.href
+                },
+                // Oxygen builder items
+                {
+                    'detectType': 'dom',
+                    'detectSelector': '#ct-edit-template-builder',
+                    'itemTitleFunction': () => 'Edit with Oxygen',
+                    'itemUrlFunction': (element) => element.href,
+                    'noCache': true
+                },
+                // It's worth noting that the Oxygen Builder doesn't use a /wp-admin URL
+                // and so kinda appears to Turbo Admin to be a "front-end" page and it
+                // doesn't refresh the menu items.
+                {
+                    'detectType': 'dom',
+                    'detectSelector': '.oxygen-back-to-wp-menu .oxygen-toolbar-button-dropdown a:not(:last-of-type)',
+                    'itemTitleFunction': (element) => 'Back to WP: ' + element.textContent,
+                    'itemUrlFunction': (element) => {
+                        if (element.href) {
+                            return element.href;
+                        } else {
+                            let url = new URL(window.location.href);
+                            return url.origin + url.pathname;
+                        }
+                    },
+                    'noCache': true
                 }
             ]
         );

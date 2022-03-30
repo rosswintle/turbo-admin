@@ -6,16 +6,40 @@
 export default class TurboAdminWpBlockEditorFullscreenKill {
 
     constructor() {
-        // This needs a slight delay as it needs to happen after the editor
-        // is initialised
-        setTimeout(() => {
-            document.body.classList.remove('is-fullscreen-mode');
-            document.body.classList.add('turbo-admin-killed-fullscreen');
 
-            const newStyles = document.createElement('style');
-            newStyles.innerHTML = "body.turbo-admin-killed-fullscreen .edit-post-fullscreen-mode-close { display: none; }";
-            document.body.appendChild(newStyles);
-        }, 400);
+        const attrObserver = new MutationObserver((mutations) => {
+            mutations.forEach(mu => {
+                // Check if we already killed fullscreen
+                // if (document.body.classList.contains('turbo-admin-killed-fullscreen')) {
+                //     return;
+                // }
+
+                if (mu.type !== "attributes" && mu.attributeName !== "class") {
+                    return;
+                }
+
+                if (mu.target.classList.contains('is-fullscreen-mode')) {
+                    this.killFullScreenEditor();
+                }
+            });
+        });
+
+        attrObserver.observe(document.body, { attributes: true });
+
+        // Also attempt a kill now in case it's already appeared.
+        this.killFullScreenEditor();
     }
 
+    killFullScreenEditor() {
+        if (! document.body.classList.contains('is-fullscreen-mode')) {
+            return;
+        }
+
+        document.body.classList.remove('is-fullscreen-mode');
+        document.body.classList.add('turbo-admin-killed-fullscreen');
+
+        const newStyles = document.createElement('style');
+        newStyles.innerHTML = "body.turbo-admin-killed-fullscreen .edit-post-fullscreen-mode-close { display: none; }";
+        document.body.appendChild(newStyles);
+    }
 }

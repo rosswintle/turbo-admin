@@ -8,7 +8,7 @@
  * Author URI:      https://rosswintle.uk/
  * Text Domain:     turbo-admin
  * Domain Path:     /languages
- * Version:         1.5.3
+ * Version:         1.7.0
  *
  * @package         Turbo_Admin
  */
@@ -32,11 +32,15 @@ add_action('wp_enqueue_scripts', 'TurboAdmin\add_admin_scripts', 10, 1);
 
 define('TURBO_ADMIN_HIDE_ICON_META_NAME', 'turbo-admin-hide-icon');
 define('TURBO_ADMIN_SHORTCUT_META_NAME', 'turbo-admin-shortcut');
+define('TURBO_ADMIN_HIDE_NOTICES_META_NAME', 'turbo-admin-hide-notices');
+define('TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME', 'turbo-admin-list-table-shortcuts');
 
 function add_admin_scripts()
 {
 	if (is_user_logged_in()) {
-		$userShortcutKeys = userShortcutKeys();
+		$userShortcutKeys   = userShortcutKeys();
+        $hideNotices        = get_user_meta( get_current_user_id(), TURBO_ADMIN_HIDE_NOTICES_META_NAME, true );
+        $listTableShortcuts = get_user_meta( get_current_user_id(), TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, true );
 
 		// We will pass an array of shortcut key objects into the JS
 		$shortcutKeys = [
@@ -47,7 +51,9 @@ function add_admin_scripts()
 		wp_enqueue_style('turbo-admin-styles', plugin_dir_url(__FILE__) . 'turbo-admin.css', []);
 
 		wp_localize_script( 'turbo-admin-scripts', 'wpTurboAdmin', [
-			'keys' => $shortcutKeys,
+			'keys'               => $shortcutKeys,
+            'hideNotices'        => intval( $hideNotices ) === 1,
+            'listTableShortcuts' => intval( $listTableShortcuts ) === 1,
 		] );
 	}
 }
@@ -111,6 +117,8 @@ function show_profile_fields($user)
 		$shortcut = defaultShortcutKeys();
 	}
     $hideIcon = get_hide_icon($user->ID);
+    $hideNotices        = get_user_meta( get_current_user_id(), TURBO_ADMIN_HIDE_NOTICES_META_NAME, true );
+    $listTableShortcuts = get_user_meta( get_current_user_id(), TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, true );
 ?>
 	<h3><?php _e('Turbo Admin settings', 'turbo_admin') ?></h3>
 	<table class="form-table">
@@ -151,6 +159,22 @@ function show_profile_fields($user)
 				</label>
 			</td>
 		</tr>
+        <tr>
+			<th>
+                <label for="turbo-admin-additional-features"><?php _e('Additional features', 'turbo_admin') ?></label>
+            </th>
+			<td>
+                <label for="turbo-admin-hide-notices">
+				    <input name="turbo-admin-hide-notices" type="checkbox" id="turbo-admin-hide-notices" value="1" <?php checked($hideNotices) ?>>
+				    Hide notices (experimental)
+                </label>
+                <br>
+                <label for="turbo-admin-list-table-shortcuts">
+                    <input name="turbo-admin-list-table-shortcuts" type="checkbox" id="turbo-admin-list-table-shortcuts" value="1" <?php checked($listTableShortcuts) ?>>
+                    List table shortcuts (experimental)
+                </label>
+            </td>
+        </tr>
 	</table>
 
 <?php
@@ -178,6 +202,16 @@ function save_extra_profile_fields($user_id)
 
     if (isset($_POST['turbo-admin-hide-icon']) && in_array(intval($_POST['turbo-admin-hide-icon']), [0, 1], true) ) {
         update_user_meta($user_id, TURBO_ADMIN_HIDE_ICON_META_NAME, $_POST['turbo-admin-hide-icon']);
+    }
+    if (isset($_POST['turbo-admin-hide-notices']) && in_array(intval($_POST['turbo-admin-hide-notices']), [0, 1], true) ) {
+        update_user_meta($user_id, TURBO_ADMIN_HIDE_NOTICES_META_NAME, $_POST['turbo-admin-hide-notices']);
+    } else {
+        update_user_meta($user_id, TURBO_ADMIN_HIDE_NOTICES_META_NAME, 0);
+    }
+    if (isset($_POST['turbo-admin-list-table-shortcuts']) && in_array(intval($_POST['turbo-admin-list-table-shortcuts']), [0, 1], true) ) {
+        update_user_meta($user_id, TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, $_POST['turbo-admin-list-table-shortcuts']);
+    } else {
+        update_user_meta($user_id, TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, 0);
     }
 }
 

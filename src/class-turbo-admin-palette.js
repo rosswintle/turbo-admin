@@ -26,12 +26,16 @@ export default class TurboAdminPalette {
 
 		console.log('Initialising TurboAdmin');
 
-		this.options = options;
+        this.options = options;
 
-		this.paletteElement = document.getElementById('ta-command-palette-container');
-        this.paletteInnerElement = document.getElementById('ta-command-palette');
-		this.paletteInputElement = document.getElementById('ta-command-palette-input');
-		this.paletteItemsElement = document.getElementById('ta-command-palette-items');
+        /** @type {HTMLDivElement} */
+        this.paletteElement      = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette-container'));
+        /** @type {HTMLDivElement} */
+        this.paletteInnerElement = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette'));
+		/** @type {HTMLInputElement} */
+        this.paletteInputElement = /** @type {HTMLInputElement} */ (document.getElementById('ta-command-palette-input'));
+		/** @type {HTMLUListElement} */
+        this.paletteItemsElement = /** @type {HTMLUListElement} */ (document.getElementById('ta-command-palette-items'));
 
 		// Get palette data
 		this.paletteData = paletteData;
@@ -40,11 +44,16 @@ export default class TurboAdminPalette {
         this.postTypes = [];
         this.fetchPostTypes();
 
-        // Set empty contentItems
-        this.contentItems = [];
+        // paletteItems is the list of 'li' elements used to build the palette
+        this.paletteItems = [];
 
-		// Convert into LI elements
-		this.paletteItems = this.buildPaletteItems();
+        // itemIndex is a "cache" of URLs used to check if we already
+        // have an item in the palette
+        this.itemIndex = {};
+
+        // Convert into LI elements
+        this.buildPaletteItems();
+
 
 		this.selectedItem = this.paletteItems[0];
         this.openedSubMenu = null;
@@ -55,7 +64,7 @@ export default class TurboAdminPalette {
 
         // Set state
         this.navigating = false;
-        this.debouncedUpdateFn = null;
+        this.debounceTimeout;
 
 		this.paletteFuseOptions = [];
 		this.paletteFuse = null;
@@ -71,10 +80,6 @@ export default class TurboAdminPalette {
 		this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
 
 		document.addEventListener('keydown', e => this.handleGlobalKey(e));
-
-		this.paletteInputElement.addEventListener('keydown', e => {
-			this.paletteActions(e);
-		});
 
 		this.paletteElement.addEventListener('click', e => {
 			this.checkForPaletteItemClick(e);
@@ -117,7 +122,8 @@ export default class TurboAdminPalette {
     }
 
 	buildPaletteItems() {
-		const paletteItems = [];
+        this.paletteItems = [];
+        this.itemIndex = {};
 
 		this.paletteData.forEach(item => {
 			const li = document.createElement('li');
@@ -129,8 +135,27 @@ export default class TurboAdminPalette {
 				title = item.parentTitle + ": " + title;
 			}
 			a.innerHTML = title;
-			paletteItems.push(li);
+            this.addPaletteListItem(li);
 		});
+	}
+
+    // This takes a 'li' element and adds it to the paletteItems.
+    // It also updates any caches and stuff.
+    addPaletteListItem(listItem) {
+        this.paletteItems.push(listItem);
+
+        const link = listItem.querySelector('a');
+        if (link) {
+            this.itemIndex[link.href] = 1;
+        }
+    }
+
+    contentItemExists(url) {
+        return Boolean(this.itemIndex[url]);
+    }
+
+    injectContentItems(contentItems) {
+        console.log('Injecting items');
 
         // We'll need this in the loop below.
         const profileLinkElem = document.getElementById('wp-admin-bar-edit-profile');
@@ -139,10 +164,38 @@ export default class TurboAdminPalette {
             profileLink = profileLinkElem.querySelector('a').href;
         }
 
-        if (this.contentItems && this.contentItems.length > 0) {
-            this.contentItems.forEach(item => {
-                const type = this.postTypes[item.subtype] ? this.postTypes[item.subtype].name : item.subtype;
-                const title = `${item.title} (${type})`;
+        // TODO: Can we not do this on every content item inject?
+        // Check for presence of Oxygen Page builder
+        /** @type {HTMLElement|string|Number} */
+        let oxygenLinkElem = document.getElementById('toplevel_page_ct_dashboard_page');
+        // Also check for a menu bar item
+        if (! oxygenLinkElem) {
+            oxygenLinkElem = document.getElementById('wp-admin-bar-oxygen_admin_bar_menu');
+        }
+        // Check to see if Oxygen link is cached
+        if (! oxygenLinkElem) {
+            oxygenLinkElem = Number(window.localStorage.getItem('ta-has-oxygen-builder'));
+        }
+        // Save Oxygen builder status
+        window.localStorage.setItem('ta-has-oxygen-builder', Boolean(oxygenLinkElem) ? '1' : '0' );
+
+        if (contentItems.length > 0) {
+            contentItems.forEach(item => {
+                const itemTitle = item.title;
+                // const itemTitle = item.title.rendered;
+                const itemType = item.type;
+                const itemUrl = item.url;
+
+                // console.log('Adding item: ' + itemTitle);
+
+                // // Check if item already exists
+                if (this.contentItemExists(itemUrl)) {
+                    console.log('Not adding duplicate');
+                    return;
+                }
+
+                const itemTypeName = this.postTypes[itemType] ? this.postTypes[itemType].name : itemType;
+                const title = `${itemTitle} (${itemTypeName})`;
 
                 const li = document.createElement('li');
                 const a = document.createElement('a');
@@ -152,7 +205,7 @@ export default class TurboAdminPalette {
                 subMenu.classList.add('ta-submenu');
                 subMenuTitle.classList.add('ta-submenu-title');
 
-                subMenuTitle.textContent = this.htmlDecode(title);
+                subMenuTitle.textContent = this.htmlDecode(itemTitle);
                 subMenuItems.classList.add('ta-submenu-items');
                 subMenu.appendChild(subMenuTitle);
                 subMenu.appendChild(subMenuItems);
@@ -160,7 +213,7 @@ export default class TurboAdminPalette {
                 const subMenuItem1 = document.createElement('li');
                 const subMenuLink1 = document.createElement('a');
                 subMenuLink1.innerText = "View";
-                subMenuLink1.href = item.url;
+                subMenuLink1.href = itemUrl;
                 subMenuItem1.appendChild(subMenuLink1);
                 subMenuItems.appendChild(subMenuItem1);
 
@@ -176,11 +229,23 @@ export default class TurboAdminPalette {
                     subMenuItems.appendChild(subMenuItem2);
                 }
 
+                if (oxygenLinkElem) {
+                    // Oxygen Edit Links are like: https://example.com.com/?page_id=26&ct_builder=true&ct_inner=true
+                    const oxygenLink = globalThis.taWp.home + `?page_id=${item.id}&ct_builder=true&ct_inner=true`;
+
+                    const subMenuItem3 = document.createElement('li');
+                    const subMenuLink3 = document.createElement('a');
+                    subMenuLink3.innerText = "Edit with Oxygen";
+                    subMenuLink3.href = oxygenLink;
+                    subMenuItem3.appendChild(subMenuLink3);
+                    subMenuItems.appendChild(subMenuItem3);
+                }
+
                 const subMenuItem3 = document.createElement('li');
                 const subMenuLink3 = document.createElement('a');
                 subMenuLink3.innerText = "Copy link";
                 // Because this is an href we're setting it gets URI encoded!
-                subMenuLink3.href = item.url;
+                subMenuLink3.href = itemUrl;
                 subMenuLink3.setAttribute('data-action', 'clipboard');
                 subMenuItem3.appendChild(subMenuLink3);
                 subMenuItems.appendChild(subMenuItem3);
@@ -191,17 +256,29 @@ export default class TurboAdminPalette {
                 li.appendChild(a);
                 li.appendChild(subMenu);
 
-                a.href = item.url;
+                a.href = itemUrl;
                 a.innerHTML = title;
-                paletteItems.push(li);
+                this.addPaletteListItem(li);
             })
         }
 
-		return paletteItems;
-	}
+        // Reset the search to work on the new items
+        this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
+        this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
 
-	handleGlobalKey(e) {
+        this.updatePaletteItems();
+    }
+
+	/**
+     * Handle global keypresses (at document level). Note that other key presses
+     * are handled by paletteActions()
+     *
+     * @param {KeyboardEvent} e
+     */
+    async handleGlobalKey(e) {
 		if (this.shortcutKeysPressed(e)) {
+            e.preventDefault();
+            e.stopPropagation();
 			if (this.paletteShown()) {
 				this.hidePalette();
 			} else {
@@ -216,12 +293,9 @@ export default class TurboAdminPalette {
                 this.hidePalette();
             }
 		}
-		// Disable keyUp and keyDown if palette shown
-        // Arrow
-		if ((e.code === 'ArrowUp'
-            || e.code === 'ArrowDown'
-            || e.code === 'Enter') && this.paletteShown()) {
-			e.preventDefault();
+
+        if (this.paletteShown()) {
+            await this.paletteActions(e);
 		}
 	}
 
@@ -239,45 +313,42 @@ export default class TurboAdminPalette {
                     && (combo.ctrl === keyEvent.ctrlKey)
                     && (
                         keyEvent.code === 'Key' + combo.key.toUpperCase()
-                        || (combo.key === ' ' && keyEvent.code.toUpperCase() === 'SPACE')
+                        || ( combo.key === ' ' && keyEvent.code.toUpperCase() === 'SPACE' )
                     );
             }, false);
 		return keysPressed;
 	}
 
-    debouncedPaletteSearchAndUpdate() {
-        if (null === this.debouncedUpdateFn) {
-            this.debouncedUpdateFn = this.debounce(this.paletteSearchAndUpdate)
+    async debouncedPaletteSearchAndUpdate() {
+        // If search string is not long enough for content search, then
+        // run without debounce.
+        if (
+            ( this.paletteInputElement.value !== '' && this.paletteInputElement.value.length <= 2)
+            || this.postTypes === [] ) {
+            this.debounceTimeout = null;
+            await this.paletteSearchAndUpdate();
+            return;
         }
-        this.debouncedUpdateFn();
+        // If timer is null, reset it to 500ms and run your functions.
+        // Otherwise, wait until timer is cleared
+        if (!this.debounceTimeout) {
+            this.debounceTimeout = setTimeout(async function () {
+                // Reset timeout
+                this.debounceTimeout = null;
+
+                // Run the search function
+                await this.paletteSearchAndUpdate();
+            }.bind(this), 750);
+        }
     }
 
-    debounce(fn) {
-        // Setup a timer
-        var timeout;
-
-        // Return a function to run debounced
-        return function () {
-
-            // Setup the arguments
-            var context = this;
-            var args = arguments;
-
-            // If there's a timer, cancel it
-            if (timeout) {
-                window.cancelAnimationFrame(timeout);
-            }
-
-            // Setup the new requestAnimationFrame()
-            timeout = window.requestAnimationFrame(function () {
-                fn.apply(context, args);
-            });
-
-        }
-
-    };
-
-	paletteActions(e) {
+	/**
+     * Handle (non-global) keypresses on the palette
+     *
+     * @param {KeyboardEvent} e
+     * @returns {Promise}
+     */
+    async paletteActions(e) {
 		if (e.code === 'ArrowDown' && this.paletteShown()) {
 			e.preventDefault();
 			this.moveDown();
@@ -292,7 +363,10 @@ export default class TurboAdminPalette {
             this.doAction(this.metaPressed(e));
             return;
 		}
-		this.paletteSearchAndUpdate();
+        if (this.isSubMenuOpen()) {
+            return;
+        }
+		await this.debouncedPaletteSearchAndUpdate();
 	}
 
 	showPalette() {
@@ -415,6 +489,11 @@ export default class TurboAdminPalette {
         const subMenuHeight = subMenuElement.offsetHeight;
         this.paletteItemsElement.style.minHeight = subMenuHeight + "px";
         subMenuElement.classList.add('active');
+
+        this.paletteInputElement.disabled = true;
+        // Blur the input so that keys can continue to be captured
+        this.paletteInputElement.blur();
+
         this.selectedSubItem = subMenuElement.querySelector('li');
         this.openedSubMenu = subMenuElement;
         this.setSelectedElement();
@@ -429,6 +508,8 @@ export default class TurboAdminPalette {
         this.paletteItemsElement.style.minHeight = 'auto';
         this.selectedSubItem = null;
         this.openedSubMenu = null;
+        this.paletteInputElement.disabled = false;
+        this.paletteInputElement.focus();
     }
 
 	doAction(metaPressed = false) {
@@ -472,24 +553,29 @@ export default class TurboAdminPalette {
 	}
 
 	async paletteSearch() {
-        // Don't search everything!
-        if (globalThis.contentApi.active && this.paletteInputElement.value.length > 2) {
-            this.paletteInnerElement.classList.add('loading');
-            const response = await globalThis.contentApi.get('search', { search: this.paletteInputElement.value, per_page: 100 });
-            this.contentItems = await response.json();
-            this.paletteInnerElement.classList.remove('loading');
-            // console.log(this.contentItems)
-        } else {
-            this.contentItems = [];
-        }
+        // Get the value...
+        // const response = await globalThis.contentApi.get('posts', { search: this.paletteInputElement.value, per_page: 100, status: ['publish', 'future', 'draft', 'pending', 'private'] });
 
-        this.paletteItems = this.buildPaletteItems();
+        this.buildPaletteItems();
 
-		if (this.paletteInputElement.value !== '') {
+        if (this.paletteInputElement.value !== '') {
             // Reset the search to work on the new items
             this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
-			this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
-		}
+            this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
+        }
+
+        // Content search - don't search everything!
+        if (globalThis.contentApi.active && this.postTypes !== [] && this.paletteInputElement.value.length > 2) {
+            this.paletteInnerElement.classList.add('loading');
+
+            globalThis.contentApi.getPosts(this.paletteInputElement.value)
+                .then(
+                    results => {
+                            this.injectContentItems(results);
+                            this.paletteInnerElement.classList.remove('loading');
+                    }
+                )
+        }
 	}
 
 	updatePaletteItems() {
