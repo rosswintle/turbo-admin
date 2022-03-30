@@ -5,45 +5,11 @@ Tags: menu, commands, shortcuts
 Requires at least: 4.9
 Tested up to: 5.9
 Requires PHP: 7.2
-Stable tag: 1.7.1
+Stable tag: 1.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
-
-Main features are:
- - Fast-action, keyboard driven command palette: Think Apple Spotlight, or Alfred, but in WordPress!
- - (Experimental) Notice hiding: Tidy your dashboard by hiding admin notices in a separate, slide-out panel.
- - (Experimental/Bets): List table keyboard shortcuts.
-
-If you love this plugin, you can get Turbo Admin on ALL your sites without needing to install the plugin, with the browser extension version!
-
-PLUS the browser extension has features not present in the plugin because, well, they only make sense in the extension!
-
- - Full screen block editor killer
- - Block editor welcome guide remover
- - Live/dev site labels
-
-Remember, in the browser extension it works everywhere that it can detect WordPress without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
-
-[Check out the Browser Extension](https://turbo-admin.com/)
-
 == Description ==
-
-## Usage
-
-Install, activate and then:
-
-* Windows: Ctrl-Alt-Shift-P (Linux also?)
-* Mac: Cmd-Alt-Shift-P
-
-You can customise the keyboard combination used in the settings in your user profile. Be careful not to choose a keyboard combination already used by your browser.
-
-Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P (or your custom key combination) again.
-
-Hover over the snail in the admin bar for a reminder of your shortcut at any time.
-
-## Turbo Admin: The command palette that gives super fast access to your WordPress Dashboard.
 
 Ugh, this Dashboard menu is so cluttered?
 
@@ -55,25 +21,51 @@ How am I supposed to work with this clutter?
 
 ## If the WordPress Dashboard is slowing you down, Turbo Admin is here to speed you up.
 
-A customisable key-combination launches a command palette with all your menu items.
+Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
 
-Fuzzy search helps you find items even when you're not sure what they are called.
+Turbo Admin's main features are:
 
-If you've used Alfred App or Spotlight or the command palette in your text editor or IDE, you'll know the benefits of a tool like this and you'll quickly feel at home.
+* A fast-action, keyboard driven command palette: Think Apple Spotlight, or Alfred, but in WordPress!
+* (Experimental) Notice hiding: Tidy your dashboard by hiding admin notices in a separate, slide-out panel.
+* (Experimental/Beta): List table keyboard shortcuts - use vim-like keys to navigate lsit tables.
 
-Install... activate... work faster!
+If you love this plugin, you can get Turbo Admin on ALL your sites without needing to install the plugin, with the browser extension version!
 
-## How does it work?
+PLUS the browser extension has features not present in the plugin because, well, they only make sense in the extension!
 
-Install the plugin and activate it and then press Ctrl-Alt-Shift-P (or Cmd-Alt-Shift-P on a Mac) to open the palette.
+* Full screen block editor killer
+* Block editor welcome guide remover
+* Live/dev site labels
 
-The keyboard shortcut can be customised from settings in your user profile. Be careful not to choose a keyboard combination already used by your browser.
+Remember, the browser extension it works everywhere that it can detect WordPress without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
+
+[Check out the Browser Extension and try it for free](https://turbo-admin.com/)
+
+## Usage
+
+Install, activate and go!
+
+## Using the Command Palette
+
+The command palette is a keyboard-driven, pop-up menu.
+
+The default keyboard shortcut to activate the command palette is:
+
+* Windows: Ctrl-Alt-Shift-P (Linux also?)
+* Mac: Cmd-Alt-Shift-P
+
+You can customise the keyboard combination used in the settings in your user profile. Be careful not to choose a keyboard combination already used by your browser!
+
+Close the palette with Escape, clicking outside of it, or pressing Ctrl/Cmd-Alt-Shift-P (or your custom key combination) again.
+
+Hover over the snail in the admin bar for a reminder of your shortcut at any time.
 
 You can:
- - type to filter the commands
- - use up and down arrows to select an item
- - press enter to select an item
- - hit escape (not too hard) to close the palette
+
+- type to filter the commands
+- use up and down arrows to select an item
+- press enter to select an item
+- hit escape (not too hard) to close the palette
 
 You can also select items with your mouse/trackpad.
 
@@ -81,19 +73,43 @@ If you hold Ctrl/Cmd when selecting an item it will open in a new tab/window (yo
 
 As well as commands, the plugin will also search content that is made available through the REST API (as long as the REST API can be discovered).
 
-## Commands aren't showing on the front end of the site.
+## Using the (experimental) Notice Hiding feature
+
+Notice hiding lets you move unwanted notices into a separate panel at the top-right of the dashboard.
+
+To turn on the Notice Hiding feature, visit your user profile, find the "Turbo Admin settings" section, and check the feature in the "Additional features" section. Be sure to click "Update Profile" to save the change.
+
+I have attempted to be somewhat "intelligent" in how I hide notices, automatically handling obvious cases, and giving you choice in other cases.
+
+This is why this feature is flagged as "Experimental" - I may not have the "intelligence" right just yet.
+
+[Read more about Turbo Admin's Notice Hiding](https://turbo-admin.com/hide-notices.html)
+
+The "Notices" tab in the top-right will show a red-circled number if there are notices to see.
+
+If Turbo Admin gives you the option of hiding a notice it will have a "Move to panel" button. Click this to move it to the panel. You can always move it back if you change your mind.
+
+## Using the (experimental) List Table Keyboard Shortcuts feature
+
+This feature is documented on [the Turbo Admin website](https://turbo-admin.com/list-table-keys.html)
+
+To turn on the List Table Keyboard Shortcuts feature, visit your user profile, find the "Turbo Admin settings" section, and check the feature in the "Additional features" section. Be sure to click "Update Profile" to save the change.
+
+== Frequently Asked Questions ==
+
+= Commands aren't showing on the front end of the site. =
 
 You need to be logged in for Turbo Admin to work.
 
 Commands are scraped from the menus on the WP Admin side and cached for use on the front end so if the palette is showing but with no commands you'll need to visit the Dashboard to get the menu cached.
 
-## Content search isn't working.
+= Content search isn't working. =
 
 This could be for several reasons, but it's dependent on the REST API being discoverable and the content you want to search being available in the API.
 
 It's known to not work in ClassicPress, when some security plugins hide the API's discovery, or when the API routes have been changed from the defaults.
 
-## Can I hide the icon in the admin bar?
+= Can I hide the icon in the admin bar? =
 
 Yes, as of v1.5.3 there is an option to do this in each user's profile.
 
@@ -113,9 +129,9 @@ function ta_hide_icon($hide, $user_id) {
 }
 `
 
-## Do I really have to install this on EVERY site?
+= Do I really have to install this on EVERY site? =
 
-It's funny you ask. There's also a (paid-for) [browser extension](https://turbo-admin.com) that will let you have Turbo Admin on every wp-admin without having to install anything!
+It's funny you ask. There's also a [browser extension](https://turbo-admin.com) that will let you have Turbo Admin on every wp-admin without having to install anything!
 
 == Installation ==
 
@@ -133,6 +149,17 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.7.0 =
+* [FEATURE] Re-designed notice hiding (still experimental)
+* [FEATURE] List table keyboard shortcuts (experimental/alpha)
+* [FEATURE] Oxygen builder support in the command palette
+* [ENHANCEMENT] MUCH improved content search with better debouncing and caching
+* [ENHANCEMENT] Improved palette startup time
+
+= 1.6.0 =
+* Note: The plugin version skipped this release
+* [FEATURE] Notice hiding (experimental)
 
 = 1.5.3 =
 * Allow icon in admin bar to be hidden
