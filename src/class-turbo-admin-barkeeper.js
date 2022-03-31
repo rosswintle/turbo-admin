@@ -39,10 +39,14 @@ export default class TurboAdminBarkeeper {
 
             this.barkeeperState = this.barkeeperState === 'open' ? 'closed' : 'open';
 
-            browser.runtime.sendMessage({
-                'action': 'barkeeperSetState',
-                'barkeeperState': this.barkeeperState,
-            });
+            if ('object' === typeof(browser)) {
+                browser.runtime.sendMessage({
+                    'action': 'barkeeperSetState',
+                    'barkeeperState': this.barkeeperState,
+                });
+            } else {
+                window.localStorage.setItem('turboAdminBarkeeperState', this.barkeeperState);
+            }
         });
 
         this.root.insertAdjacentElement('afterend', this.button);

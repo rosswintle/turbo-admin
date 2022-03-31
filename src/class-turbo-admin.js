@@ -137,6 +137,10 @@ export default class TurboAdmin {
         }
 
         if (true === this.options['barkeeper']) {
+            // In the plugin, barkeeper-state will be in... local storage(?)
+            if ('object' !== typeof(browser)) {
+                this.options['barkeeper-state'] = window.localStorage.getItem('turboAdminBarkeeperState');
+            }
             this.turboAdminBarkeeper = new TurboAdminBarkeeper(this.options['barkeeper-state']);
         }
 
