@@ -417,7 +417,7 @@ export default class TurboAdmin {
         if ( shortcut.shift ) {
             keysString += 'Shift-';
         }
-        keysString += shortcut.key;
+        keysString += shortcut.key.toUpperCase();
         return keysString;
     }
 
