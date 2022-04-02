@@ -49,6 +49,7 @@ import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-
 import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
 import TurboAdminWpNotices from './class-turbo-admin-wp-notices.js';
 import TurboAdminListTableShortcuts from './class-list-table-shortcuts.js';
+import TurboAdminBarkeeper from './class-turbo-admin-barkeeper.js';
 
 export default class TurboAdmin {
 
@@ -133,6 +134,14 @@ export default class TurboAdmin {
 
         if (true === this.options['list-table-keyboard-shortcuts']) {
             this.turboAdminListTableShortcuts = new TurboAdminListTableShortcuts();
+        }
+
+        if (true === this.options['barkeeper']) {
+            // In the plugin, barkeeper-state will be in... local storage(?)
+            if ('object' !== typeof(browser)) {
+                this.options['barkeeper-state'] = window.localStorage.getItem('turboAdminBarkeeperState');
+            }
+            this.turboAdminBarkeeper = new TurboAdminBarkeeper(this.options['barkeeper-state']);
         }
 
         // Add other things if we're logged in and have an API nonce
@@ -350,7 +359,6 @@ export default class TurboAdmin {
     }
 
     addPalette() {
-        // Container
         const container = document.createElement('div');
         container.id = 'ta-command-palette-container';
         // Palette
@@ -371,7 +379,46 @@ export default class TurboAdmin {
         palette.appendChild(input);
         palette.appendChild(list);
 
-        document.querySelector(this.options.appendToElement ?? 'body').appendChild(container);
+        if (document.getElementById('wpadminbar') && this.options['admin-bar-search'] === true) {
+            const paletteLi = document.createElement('li');
+            paletteLi.appendChild(container);
+            const adminBar = document.getElementById('wp-admin-bar-top-secondary');
+            adminBar.appendChild(paletteLi);
+
+            // Add focus handler
+            input.addEventListener('focus', e => this.turboAdminPalette.showPalette());
+
+            // Add placeholder
+            const placeholder = document.createElement('div');
+            placeholder.id = 'ta-shortcut-key-placeholder';
+            placeholder.innerText = this.buildShortcutKeysString();
+            placeholder.addEventListener('click', e => input.focus());
+
+            palette.insertBefore( placeholder, list );
+        } else {
+            // Container
+            document.querySelector(this.options.appendToElement ?? 'body').appendChild(container);
+        }
+    }
+
+    buildShortcutKeysString () {
+        let keysString = '';
+        let shortcut = this.options.shortcutKeys[0];
+
+        if ( shortcut.meta ) {
+            keysString += 'Cmd-';
+        }
+        if ( shortcut.ctrl ) {
+            keysString += 'Ctrl-';
+        }
+        if ( shortcut.alt ) {
+            keysString += 'Alt-';
+        }
+        if ( shortcut.shift ) {
+            keysString += 'Shift-';
+        }
+        keysString += shortcut.key.toUpperCase();
+        return keysString;
     }
 
 }

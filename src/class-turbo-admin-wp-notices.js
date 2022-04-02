@@ -12,7 +12,7 @@ export default class TurboAdminWpNotices {
         }
 
         /*
-        * These are the global notice selectors - these are always hidden
+        * These are the global notice selectors
         */
         this.noticeSelectors = [
             '#wpbody-content > .notice',
@@ -121,7 +121,7 @@ console.log('Notices', notices);
         }
 
         /**
-         * Add button.
+         * Add button
          */
         /** @type {HTMLButtonElement} */
         const noticesButton = document.createElement('button');
@@ -263,8 +263,6 @@ console.log('Notices', notices);
             window.localStorage.setItem('rememberedNoticeIds', JSON.stringify(this.rememberedNoticeIds));
         }
     }
-
-
 
     /*
      * For notices without IDs we'll see if we can add an ID that's a hash of their classlist
