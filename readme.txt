@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 4.9
 Tested up to: 5.9
 Requires PHP: 7.2
-Stable tag: 1.7.0
+Stable tag: 1.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -26,6 +26,8 @@ How am I supposed to work with this clutter?
 Turbo Admin's main features are:
 
 * A fast-action, keyboard driven command palette: Think Apple Spotlight, or Alfred, but in WordPress!
+* The command palette is pop-up/modal by default, but has an option to be present in the admin bar.
+* A "barkeeper" that hides non-critical admin-bar items in a slide-out panel.
 * (Experimental) Notice hiding: Tidy your dashboard by hiding admin notices in a separate, slide-out panel.
 * (Experimental/Beta): List table keyboard shortcuts - use vim-like keys to navigate lsit tables.
 
@@ -72,6 +74,22 @@ You can also select items with your mouse/trackpad.
 If you hold Ctrl/Cmd when selecting an item it will open in a new tab/window (you may need to allow your browser to open popups).
 
 As well as commands, the plugin will also search content that is made available through the REST API (as long as the REST API can be discovered).
+
+## Admin bar search mode
+
+The command palette is pop-up/modal by default. But if you forget it's there then you can opt to have the command palette as an always-displayed search box in the admin bar.
+
+To use this mode, visit your user profile, find the "Turbo Admin settings" section and check the "Admin bar search" option. Be sure to click "Update Profile" to save the change.
+
+## Barkeeper
+
+The "Barkeeper" hides away non-critical admin-bar items in a slide-out panel. Click the arrow to toggle the panel open and closed.
+
+The Barkeeper keeps a few items that I've deemed as critical, such as the site name and the updates icon/notification.
+
+To enable the Barkeeper feature, visit your user profile, find the "Turbo Admin settings" section and check the "Barkeeper" option. Be sure to click "Update Profile" to save the change.
+
+This feature pairs really well with the admin bar search mode, freeing up space for the admin-bar search box.
 
 ## Using the (experimental) Notice Hiding feature
 
@@ -149,6 +167,11 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.9.0 =
+* [FEATURE] Admin bar search mode
+* [FEATURE] Barkeeper
+* [ENHANCEMENT] Better post type detection in the command palette
 
 = 1.7.0 =
 * [FEATURE] Re-designed notice hiding (still experimental)

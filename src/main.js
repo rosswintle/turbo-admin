@@ -58,8 +58,8 @@ document.addEventListener('DOMContentLoaded', async e => {
         'list-table-keyboard-shortcuts': globalThis.wpTurboAdmin['listTableShortcuts'] === '1',
         'hide-notices': globalThis.wpTurboAdmin['hideNotices'] === '1',
         'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array(),
-        'barkeeper': true,
-        'admin-bar-search': true
+        'barkeeper': globalThis.wpTurboAdmin['barkeeper'] === '1',
+        'admin-bar-search': globalThis.wpTurboAdmin['adminBarSearch'] === '1',
 	}
 	await taInit(globalThis.turboAdminOptions);
 });
