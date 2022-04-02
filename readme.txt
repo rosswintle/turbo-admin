@@ -172,6 +172,7 @@ If you're reading this then you've probably already done step 1. So what are you
 * [FEATURE] Admin bar search mode
 * [FEATURE] Barkeeper
 * [ENHANCEMENT] Better post type detection in the command palette
+* [FIX] Notice hiding didn't work! Fixed.
 
 = 1.7.0 =
 * [FEATURE] Re-designed notice hiding (still experimental)
