@@ -160,8 +160,6 @@ console.log('Notices', notices);
         noticesPanelInner.id = 'ta-notices-panel-inner';
 
         noticesToHide.forEach(notice => {
-            // Add 'inline' class otherwise WordPress might move them around!
-            notice.classList.add('inline');
             // See Toolbelt's implementation: https://github.com/BinaryMoon/wp-toolbelt/blob/dev/modules/tidy-notifications/src/js/script.js
             noticesPanelInner.append(notice);
         });

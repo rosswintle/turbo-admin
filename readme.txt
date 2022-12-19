@@ -3,9 +3,9 @@ Contributors: magicroundabout
 Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
 Requires at least: 4.9
-Tested up to: 5.9
+Tested up to: 6.1
 Requires PHP: 7.2
-Stable tag: 1.9.0
+Stable tag: 1.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,15 +31,17 @@ Turbo Admin's main features are:
 * (Experimental) Notice hiding: Tidy your dashboard by hiding admin notices in a separate, slide-out panel.
 * (Experimental/Beta): List table keyboard shortcuts - use vim-like keys to navigate lsit tables.
 
-If you love this plugin, you can get Turbo Admin on ALL your sites without needing to install the plugin, with the browser extension version!
+If you love this plugin, you can get Turbo Admin on ALL your sites without needing to install the plugin, PLUS additional premium features, with [the browser extension version](https://turbo-admin.com/)!
 
-PLUS the browser extension has features not present in the plugin because, well, they only make sense in the extension!
+PLUS the browser extension has features not present in the plugin. Some features only make sense in the extension, others are considered "premium" and are only available in the browser extension.
 
+* WooCommerce search (premium - extension only)
+* Gravity Forms Search (premium - extension only)
 * Full screen block editor killer
 * Block editor welcome guide remover
 * Live/dev site labels
 
-Remember, the browser extension it works everywhere that it can detect WordPress without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
+Remember, the browser extension it works everywhere that it can detect WordPress, without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
 
 [Check out the Browser Extension and try it for free](https://turbo-admin.com/)
 
@@ -73,7 +75,21 @@ You can also select items with your mouse/trackpad.
 
 If you hold Ctrl/Cmd when selecting an item it will open in a new tab/window (you may need to allow your browser to open popups).
 
-As well as commands, the plugin will also search content that is made available through the REST API (as long as the REST API can be discovered).
+## Search modes
+
+As well as commands, the plugin can also search content that is made available through the REST API (as long as the REST API can be discovered).
+
+This is done using "search modes".
+
+For example, if you type "post" and then press the tab key (or type a colon) you will switch to the "post" search mode. In this mode you are searching for posts.
+
+Turbo Admin automatically creates search modes for any public post types on your site. It also creates the following search modes:
+
+* user
+* plugin
+* site (for WordPress Multisite sites)
+
+There is full documentation of search modes on [the Turbo Admin website](https://turbo-admin.com/searching.html)
 
 ## Admin bar search mode
 
@@ -167,6 +183,12 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.12.0 =
+* [FEATURE] Search modes
+* [FEATURE] User search
+* [FEATURE] Plugin search
+* [ENHANCEMENT] Command palette core re-written to be faster, more reliable and more extensible.
 
 = 1.9.0 =
 * [FEATURE] Admin bar search mode

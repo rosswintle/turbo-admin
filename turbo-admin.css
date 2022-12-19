@@ -38,10 +38,12 @@
 	position: absolute;
 	top: calc( 10vh + 20px );
 	left: 50%;
-	overflow: hidden;
+	/* overflow: hidden; */
+	overflow: visible;
 	transform: translateX(-50%);
 	opacity: 0;
 	transition: top 0.3s, opacity 0.3s;
+    -webkit-font-smoothing: subpixel-antialiased; /* This normalises how the front and back-ends look */
 }
 
 #ta-command-palette-container.active #ta-command-palette {
@@ -49,7 +51,109 @@
 	top: 10vh;
 }
 
-#ta-command-palette-input {
+/*
+ * We need to override "#wpadminbar *" in admin-bar mode, so many styles have a #wpadminbar prefix
+ * as well as a regular selector.
+ */
+#ta-command-palette-tab-notice,
+#wpadminbar #ta-command-palette-tab-notice {
+    display: block;
+    color: white;
+    position: absolute;
+    right: 24px;
+    font-size: 12px;
+    line-height: 1;
+    top: 29px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 20;
+}
+
+#ta-command-palette-tab-notice.active,
+#wpadminbar #ta-command-palette-tab-notice.active {
+    opacity: 1;
+}
+
+#ta-command-palette-tab-notice-button,
+#wpadminbar #ta-command-palette-tab-notice-button {
+    display: inline-block;
+    color: white;
+    border: 1px solid white;
+    position: relative;
+    font-size: 12px;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-left: 6px;
+}
+
+#ta-command-palette-search-mode-tag,
+#wpadminbar #ta-command-palette-search-mode-tag,
+#ta-command-palette-notice,
+#wpadminbar #ta-command-palette-notice {
+    color: white;
+    font-size: 16px;
+    border-radius: 6px;
+    background-color:rgb(51,51,51);
+    position: absolute;
+    left: 20px;
+    top: 16px;
+    padding: 4px 8px;
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 0.3s, top 0.3s, transform 0.3s;
+}
+
+#ta-command-palette-notice,
+#wpadminbar #ta-command-palette-notice {
+    top: 16px;
+    left: auto;
+    right: 20px;
+}
+
+#ta-command-palette-search-mode-tag.active,
+#ta-command-palette-notice.active {
+    top: -18px;
+    left: 20px;
+    padding: 6px 10px;
+}
+
+#ta-command-palette-notice.active {
+    left: auto;
+    right: 20px;
+}
+
+#ta-command-palette-search-mode-tag.active,
+#ta-command-palette-notice.active,
+#wpadminbar #ta-command-palette-search-mode-tag.active,
+#wpadminbar #ta-command-palette-notice.active {
+    opacity: 1;
+}
+
+#wpadminbar #ta-command-palette-notice {
+    font-size: 13px;
+    top: 27px;
+    right: 0;
+}
+
+#wpadminbar #ta-command-palette-search-mode-tag {
+    font-size: 14px;
+    top: 2px;
+    left: 0;
+    transform: translateX( -100% );
+    background-color: #666;
+}
+#wpadminbar #ta-command-palette-search-mode-tag:before {
+    content: 'Search for ';
+}
+#wpadminbar #ta-command-palette-search-mode-tag.active {
+    top: 2px;
+    transform: translateX( calc( -100% - 5px ) );
+    opacity: 1;
+}
+
+
+#ta-command-palette-input,
+#wpadminbar #ta-command-palette-input {
 	font-family: inherit;
 	background-color: #333;
 	border: 0 none;
@@ -62,6 +166,7 @@
 	width: 100%;
 	color: #FFF;
 	outline: none;
+    z-index: 10; /* To hide the search-mode tag */
 }
 
 @keyframes rotation {
@@ -73,10 +178,12 @@
   }
 }
 
-#ta-command-palette:after {
+#ta-command-palette:after,
+#wpadminbar #ta-command-palette:after {
     display: none;
     content: '';
     position: absolute;
+    z-index: 20;
     top: 28px;
     right: 24px;
     width: 20px;
@@ -89,12 +196,32 @@
     animation-iteration-count: infinite;
 }
 
-#ta-command-palette.loading:after {
+#ta-command-palette.loading:after,
+#wpadminbar #ta-command-palette.loading:after {
     background-image: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg' data-reactroot=''%3E%3Cpath fill='white' d='M12 2C11.1716 2 10.5 2.67157 10.5 3.5C10.5 4.32843 11.1716 5 12 5C12.8284 5 13.5 4.32843 13.5 3.5C13.5 2.67157 12.8284 2 12 2Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M12 19C11.1716 19 10.5 19.6716 10.5 20.5C10.5 21.3284 11.1716 22 12 22C12.8284 22 13.5 21.3284 13.5 20.5C13.5 19.6716 12.8284 19 12 19Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M7.75 3.14001C6.92157 3.14001 6.25 3.81159 6.25 4.64001C6.25 5.46844 6.92157 6.14001 7.75 6.14001C8.57843 6.14001 9.25 5.46844 9.25 4.64001C9.25 3.81159 8.57843 3.14001 7.75 3.14001Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M16.25 17.86C15.4216 17.86 14.75 18.5316 14.75 19.36C14.75 20.1884 15.4216 20.86 16.25 20.86C17.0784 20.86 17.75 20.1884 17.75 19.36C17.75 18.5316 17.0784 17.86 16.25 17.86Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M4.64001 6.25C3.81159 6.25 3.14001 6.92157 3.14001 7.75C3.14001 8.57843 3.81159 9.25 4.64001 9.25C5.46844 9.25 6.14001 8.57843 6.14001 7.75C6.14001 6.92157 5.46844 6.25 4.64001 6.25Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M19.36 14.75C18.5316 14.75 17.86 15.4216 17.86 16.25C17.86 17.0784 18.5316 17.75 19.36 17.75C20.1884 17.75 20.86 17.0784 20.86 16.25C20.86 15.4216 20.1884 14.75 19.36 14.75Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M3.5 10.5C2.67157 10.5 2 11.1716 2 12C2 12.8284 2.67157 13.5 3.5 13.5C4.32843 13.5 5 12.8284 5 12C5 11.1716 4.32843 10.5 3.5 10.5Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M20.5 10.5C19.6716 10.5 19 11.1716 19 12C19 12.8284 19.6716 13.5 20.5 13.5C21.3284 13.5 22 12.8284 22 12C22 11.1716 21.3284 10.5 20.5 10.5Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M4.64001 14.75C3.81159 14.75 3.14001 15.4216 3.14001 16.25C3.14001 17.0784 3.81159 17.75 4.64001 17.75C5.46844 17.75 6.14001 17.0784 6.14001 16.25C6.14001 15.4216 5.46844 14.75 4.64001 14.75Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M19.36 6.25C18.5316 6.25 17.86 6.92157 17.86 7.75C17.86 8.57843 18.5316 9.25 19.36 9.25C20.1884 9.25 20.86 8.57843 20.86 7.75C20.86 6.92157 20.1884 6.25 19.36 6.25Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M7.75 17.86C6.92157 17.86 6.25 18.5316 6.25 19.36C6.25 20.1884 6.92157 20.86 7.75 20.86C8.57843 20.86 9.25 20.1884 9.25 19.36C9.25 18.5316 8.57843 17.86 7.75 17.86Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3Cpath fill='white' d='M16.25 3.14001C15.4216 3.14001 14.75 3.81159 14.75 4.64001C14.75 5.46844 15.4216 6.14001 16.25 6.14001C17.0784 6.14001 17.75 5.46844 17.75 4.64001C17.75 3.81159 17.0784 3.14001 16.25 3.14001Z' clip-rule='evenodd' fill-rule='evenodd' undefined='1'%3E%3C/path%3E%3C/svg%3E%0A");
     display: block;
 }
 
-#ta-command-palette-items {
+#ta-command-palette-items-container,
+#wpadminbar #ta-command-palette-items-container {
+	position: relative;
+	background-color: #000;
+	font-size: inherit;
+    line-height: 1.3;
+	display: block;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 80%;
+	max-height: 300px;
+	color: #FFF;
+    overflow: hidden;
+}
+
+#ta-command-palette-items,
+#ta-command-palette-submenu-container,
+#wpadminbar #ta-command-palette-items,
+#wpadminbar #ta-command-palette-submenu-container {
 	position: relative;
 	background-color: #000;
 	font-size: inherit;
@@ -104,35 +231,55 @@
 	padding: 0;
 	list-style-type: none;
 	width: 100%;
-	height: 80%;
-	max-height: 300px;
+	height: 100%;
+    max-height: 300px;
 	overflow-x: hidden;
 	overflow-y: scroll;
-	color: #FFF;
 	scrollbar-width: thin;          /* "auto" or "thin" */
     scrollbar-color: #444 #000;   /* scroll thumb and track */
 }
-#ta-command-palette-items::-webkit-scrollbar {
+
+#ta-command-palette-submenu-container,
+#wpadminbar #ta-command-palette-submenu-container {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    height: auto;
+    min-height: 100%;
+    transition: left 0.3s;
+}
+
+#ta-command-palette-submenu-container.active,
+#wpadminbar #ta-command-palette-submenu-container.active {
+    left: 0;
+}
+
+#ta-command-palette-items::-webkit-scrollbar,
+#ta-command-palette-submenu-container::-webkit-scrollbar {
   width: 6px;               /* width of the entire scrollbar */
 }
 
-#ta-command-palette-items::-webkit-scrollbar-track {
+#ta-command-palette-items::-webkit-scrollbar-track,
+#ta-command-palette-submenu-container::-webkit-scrollbar {
   background: #000;        /* color of the tracking area */
 }
 
-#ta-command-palette-items::-webkit-scrollbar-thumb {
+#ta-command-palette-items::-webkit-scrollbar-thumb,
+#ta-command-palette-submenu-container::-webkit-scrollbar {
   background-color: #444;    /* color of the scroll thumb */
   border-radius: 20px;       /* roundness of the scroll thumb */
   border: 0px none;  /* creates padding around scroll thumb */
 }
 
-#ta-command-palette li {
+#ta-command-palette li,
+#wpadminbar #ta-command-palette li {
 	display: block;
 	margin: 0 !important;
 	padding: 8px !important;
 }
 
-#ta-command-palette a {
+#ta-command-palette a,
+#wpadminbar #ta-command-palette a {
 	display: flex;
     flex-shrink: 0;
     width: 100%;
@@ -181,7 +328,15 @@
 	display: none;
 }
 
+/* Submenu items are all hidden - the markup is copied to the submenu container */
 #ta-command-palette .ta-submenu {
+    display: none;
+}
+#ta-command-palette #ta-command-palette-submenu-container .ta-submenu {
+    display: block;
+}
+
+/* #ta-command-palette .ta-submenu {
     position: absolute;
     right: -100%;
     top: 0;
@@ -194,7 +349,7 @@
 
 #ta-command-palette .ta-submenu.active {
     right: 0;
-}
+} */
 
 #ta-command-palette .ta-submenu-title {
     padding: 0.5rem;
@@ -215,9 +370,11 @@
     left: auto;
     width: auto;
     height: auto;
+    padding: 3px 5px 3px 5px;
     position: relative;
     background-color: none;
     transition: none;
+    overflow: visible;
 }
 
 /* This resets stupid styles in the wpadminbar */
@@ -238,10 +395,17 @@
     transform: none;
     opacity: 1;
     transition: none;
-    padding: 3px 5px 3px 5px;
+    padding: 0;
     background-color: #1d2327;
 }
 
+#wpadminbar #ta-command-palette-tab-notice {
+    top: 3px;
+    right: 10px;
+}
+#wpadminbar #ta-command-palette-tab-notice-text {
+    display: none;
+}
 #wpadminbar #ta-command-palette-input {
     line-height: 1.6;
     margin-bottom: 0;
@@ -253,8 +417,9 @@
 
 #wpadminbar #ta-shortcut-key-placeholder {
     position: absolute;
-    top: 8px;
+    top: 6px;
     left: 12px;
+    z-index: 100;
 }
 
 #wpadminbar #ta-command-palette.loading::after {
@@ -279,9 +444,16 @@
     width: 100%;
     height: auto;
 }
+
+#wpadminbar #ta-command-palette-submenu-container {
+    background-color: #1d2327;
+    z-index: 100000;
+}
+
 #wpadminbar #ta-command-palette-items .ta-submenu {
     background-color: #1d2327;
 }
+
 #wpadminbar #ta-command-palette-items .ta-has-child-menu.selected {
     z-index: 9999999; /* Needs to be higher than #ta-command-palette-container */
 }
@@ -303,7 +475,7 @@
 
 #wpadminbar #ta-command-palette-container.active #ta-command-palette-items {
     padding-top: 8px;
-    max-height: 400px;
+    max-height: 300px;
     opacity: 1;
 }
 

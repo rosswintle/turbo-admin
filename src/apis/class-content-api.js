@@ -1,4 +1,4 @@
-import Storage from './class-storage.js';
+import Storage from '../class-storage.js';
 
 export default class ContentApi {
 
@@ -7,6 +7,7 @@ export default class ContentApi {
         // console.log('Discovered API base: ', this.apiBase);
         this.active = false;
         this.store = new Storage();
+        this.postTypes = [];
 
         // This is used to "cache" duplicate requests.
         // It's an object because it will have search strings as keys
@@ -14,6 +15,7 @@ export default class ContentApi {
     }
 
     async discoverApiRoot() {
+        console.log('Discovering API root');
         let wpApiSettings = null;
         this.storageKey = 'wpApiSettings.' + globalThis.taWp.home;
 
@@ -60,6 +62,22 @@ export default class ContentApi {
             this.active = true;
             return;
         }
+        // This should be very rare. I should only really see it in development.
+        console.log('API Route Discovery failed');
+        // TODO: This can't display as the palette isn't created yet.
+        // globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('Can\'t find the WP API. Try visiting the dashboard to refresh things.');
+    }
+
+    async discoverPostTypes() {
+        console.log('Discovering post types');
+        if (! this.active) {
+            console.log('Not active');
+            this.postTypes = [];
+            return;
+        }
+
+        this.postTypes = await this.getPostTypes();
+        console.log('Discovered post types: ', this.postTypes);
     }
 
     userLoggedIn() {
@@ -102,14 +120,29 @@ export default class ContentApi {
         }
     }
 
-    types() {
-        return globalThis.turboAdmin.turboAdminPalette.postTypes;
+    async getPostTypes() {
+        // Check the cache
+        if (undefined !== this.cache['postsTypes']) {
+            return this.cache['postTypes'];
+        }
+
+        // Fetch results
+        const response = await this.get('types');
+
+        // Decode JSON
+        const result = await response.json();
+
+        // Store in the cache
+        this.cache['postTypes'] = result;
+
+        return result;
     }
 
-    async getPosts(searchString) {
+    async getPosts(searchString, postType = 'any') {
         // Check the cache
-        if (undefined !== this.cache[searchString]) {
-            return this.cache[searchString];
+        const cacheKey =  `posts-${postType}-${searchString}`;
+        if (undefined !== this.cache[cacheKey]) {
+            return this.cache[cacheKey];
         }
 
         // Fetch results
@@ -121,7 +154,7 @@ export default class ContentApi {
                 per_page: 100,
                 // status: this.statuses(),
                 type: 'post',
-                subtype: 'any'
+                subtype: postType
             }
         );
 
@@ -129,7 +162,86 @@ export default class ContentApi {
         const result = await response.json();
 
         // Store in the cache
-        this.cache[searchString] = result;
+        this.cache[cacheKey] = result;
+
+        return result;
+    }
+
+    /**
+     * We can't use the API to get a post of any post type. So we hack this a bit.
+     *
+     * @param {number} postId
+     * @returns {Promise<any>}
+     */
+    async doesPostExist(postId) {
+        // Check the cache
+        if (undefined !== this.cache['post-' + postId]) {
+            return this.cache['post-' + postId];
+        }
+
+        const init = {
+            method: 'GET',
+            headers: {},
+            mode: 'cors',
+            cache: 'no-store',
+            credentials: 'include'
+        }
+
+        const response = await fetch(`${globalThis.taWp.siteUrl}/post.php?post=${postId}&action=edit`, init);
+
+        this.cache['post-' + postId] = response;
+
+        return response?.status === 200;
+    }
+
+    async getPlugins(searchString) {
+        // Check the cache
+        if (undefined !== this.cache['plugins-' + searchString]) {
+            return this.cache['plugins-' + searchString];
+        }
+
+        let requestOptions = {};
+
+        if (searchString) {
+            requestOptions.search = searchString;
+        }
+
+        // Fetch results
+        const response = await this.get(
+            "plugins",
+            requestOptions
+        );
+
+        // Decode JSON
+        const result = await response.json();
+
+        // Store in the cache
+        this.cache['plugins-' + searchString] = result;
+
+        return result;
+    }
+
+    async getUsers(searchString) {
+        // Check the cache
+        if (undefined !== this.cache['users-' + searchString]) {
+            return this.cache['users-' + searchString];
+        }
+
+        // Fetch results
+        const response = await this.get(
+            "users",
+            {
+                search: searchString,
+                per_page: 100,
+                context: 'edit' // view / embed / edit
+            }
+        );
+
+        // Decode JSON
+        const result = await response.json();
+
+        // Store in the cache
+        this.cache['users-' + searchString] = result;
 
         return result;
     }
@@ -140,6 +252,7 @@ export default class ContentApi {
             headers: {},
             mode: 'cors',
             cache: 'no-store',
+            credentials: 'include'
         }
 
         // Add the nonce if there is one
@@ -149,7 +262,11 @@ export default class ContentApi {
 
         const params = this.makeParamString(data);
 
-        const response = await fetch(`${this.apiBase}${path}/?${params}`);
+        const response = await fetch(`${this.apiBase}${path}/?${params}`, init);
+
+        if (response.status < 200 || response.status >= 300) {
+            globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('WordPress API Error. Try visiting the dashboard to refresh things.');
+        }
 
         return response;
     }

@@ -1,23 +1,14 @@
 import TurboAdmin from './class-turbo-admin.js';
-import ContentApi from './apis/class-content-api.js';
+import ContentApi from './class-content-api.js';
 import Wp from './class-wp.js';
 import TurboAdminWpNotices from './class-turbo-admin-wp-notices.js';
-import WoocommerceApi from './apis/class-woocommerce-api.js';
-import GravityFormsApi from './apis/class-gravity-forms-api.js';
 
 const taStorageKey = 'turbo-admin-settings';
-
-// Use this to clear storage
-// browser.storage.local.remove(taStorageKey).then();
 
 // Note that in the extension, the globalThis is not the browser's global scope,
 // it is sandboxed. So we can't check across the plugin/extension boundary here.
 async function taInit(settings) {
 
-    if (typeof(globalThis.turboAdmin) !== 'undefined') {
-        // Already initialised for some reason
-        return;
-    }
     globalThis.turboAdmin = null;
 
     // Handle empty settings
@@ -27,8 +18,6 @@ async function taInit(settings) {
     }
 
     globalThis.turboAdminOptions = settings[taStorageKey];
-
-    console.log('Preparing Turbo Admin');
 
     // Get Wp stuff ready
     globalThis.taWp = new Wp();
@@ -41,19 +30,12 @@ async function taInit(settings) {
     // Get/set api settings
     globalThis.contentApi = new ContentApi();
     await globalThis.contentApi.discoverApiRoot();
-    await globalThis.contentApi.discoverPostTypes();
-    globalThis.woocommerceApi = new WoocommerceApi();
-    globalThis.gravityFormsApi = new GravityFormsApi();
 
     console.log('Turbo Admin: Content API is initialised');
 
     globalThis.turboAdmin = new TurboAdmin(globalThis.turboAdminOptions);
+
     await globalThis.turboAdmin.init();
-
-
-
-    // This needs all the APIs to be ready
-    await globalThis.turboAdmin.activatePlugins();
 
     if (settings[taStorageKey]['hide-notices']) {
         globalThis.turboAdminWpNotices = new TurboAdminWpNotices(settings[taStorageKey].rememberedNoticeIds);

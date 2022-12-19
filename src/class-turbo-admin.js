@@ -42,31 +42,76 @@
  *   ]
  * }
  */
+
 import TurboAdminPalette from './class-turbo-admin-palette.js';
-import TurboAdminMenuItem from './class-turbo-admin-menu-item.js';
-import Acf from './class-acf.js';
-import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-editor-fullscreen-kill.js';
-import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
+import TurboAdminMenuItem from './types/class-turbo-admin-menu-item.js';
+import SearchMode from './types/class-search-mode.js';
+import TurboAdminPlugin from './types/class-turbo-admin-plugin.js';
+import Acf from './plugins/class-acf.js';
+// import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-editor-fullscreen-kill.js';
+// import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
 import TurboAdminWpNotices from './class-turbo-admin-wp-notices.js';
 import TurboAdminListTableShortcuts from './class-list-table-shortcuts.js';
-import TurboAdminBarkeeper from './class-turbo-admin-barkeeper.js';
+import TurboAdminBarkeeper from './plugins/class-turbo-admin-barkeeper.js';
+import TurboAdminContentSearch from './plugins/class-turbo-admin-content-search.js';
+import TurboAdminPluginSearch from './plugins/class-turbo-admin-plugins.js';
+import TurboAdminUserSearch from './plugins/class-turbo-admin-users.js';
+// import TurboAdminWoocommerce from './plugins/class-turbo-admin-woocommerce.js';
+// import TurboAdminGravityForms from './plugins/class-turbo-admin-gravity-forms.js';
+import TurboAdminMUSites from './plugins/class-turbo-admin-mu-sites.js';
+import TurboAdminOxygenBuilder from './plugins/class-turbo-admin-oxygen-buillder.js';
 
 export default class TurboAdmin {
 
+    /**
+     * @param {*} options
+     * @returns {TurboAdmin}
+     */
     constructor(options) {
+        // Sometimes we get a second copy of TA running, like if the plugin is running too.
+        // Is this case we want to skip the initialisation.
+        this.doInit = true;
+
         if (document.getElementById('ta-command-palette-container')) {
             console.log('TurboAdmin already initialised - I won\'t make a second copy!');
-            return;
+            this.doInit = false;
+            return globalThis.turboAdmin;
         }
 
         this.options = options;
+        this.plugins = {};
+
+        // TODO: Something? What should this type be?
+        this.searchModes = {};
+
+        // On the front end we set this if there is no saved menu.
+        this.menuNeedsRefresh = false;
     }
 
+    /**
+     * Perform initialization - this is all the things that do not need APIs to
+     * get set up.
+     */
     async init() {
+        if (! this.doInit) {
+            return;
+        }
+
+        // Register all the plugins
+        new TurboAdminBarkeeper();
+        new TurboAdminContentSearch();
+        new TurboAdminPluginSearch();
+        new TurboAdminUserSearch();
+        // new TurboAdminWoocommerce();
+        // new TurboAdminGravityForms();
+        new TurboAdminMUSites();
+        new TurboAdminOxygenBuilder();
+
         // Grab the global Wp object instance
         this.wp = globalThis.taWp;
 
         this.menu = [];
+
         // Check for saved menu when on front-end
         if (! this.wp.isBackend) {
             // Only use the cached items if the current URL matches the last site URL
@@ -74,14 +119,22 @@ export default class TurboAdmin {
             // We ONLY need to do this on the front-end as the back-end will always
             // refresh the menu.
             if (! this.wp.siteChanged) {
-                // Get from localStorage
-                const savedMenu = window.localStorage.getItem('ta-palette-data');
+                // Check for .logged-in class on body - if logged in, we can use the saved menu,
+                // if it exists.
+                if (document.body.classList.contains('logged-in')) {
+                    // Get from localStorage
+                    const savedMenu = window.localStorage.getItem('ta-palette-data');
 
-                if (null !== savedMenu) {
-                    // Check for .logged-in class on body
-                    if (document.body.classList.contains('logged-in')) {
-                        // If still logged in merge (?) the items
+                    // This attempts to see if we have cached items from the back-en
+                    if (null === savedMenu) {
+                        this.menuNeedsRefresh = true;
+                    } else {
                         this.menu = JSON.parse(savedMenu);
+                        // Check if there is no "Media" item  - this should ONLY be in the back-end
+                        if (! this.menu.some(item => item.action.endsWith('upload.php'))) {
+                            this.menuNeedsRefresh = true;
+                        }
+                        // Merge (?) the items?
                     }
                 }
             }
@@ -122,26 +175,30 @@ export default class TurboAdmin {
         this.addPalette();
         // Initialise controls on the palette
         this.turboAdminPalette = new TurboAdminPalette(this.menu, this.options);
+    }
 
-        if (true === this.options['block-editor-fullscreen-disable']) {
-            // Initialise fullscreen kill
-            this.turboAdminFullscreenKill = new TurboAdminWpBlockEditorFullscreenKill();
-        }
+    /**
+     * These are initialization steps that DO needs APIs to be set up.
+     */
+    activatePlugins() {
+        // Initialize all plugins
+        Object.keys(this.plugins).forEach( plugin => {
+            if (this.plugins[plugin].shouldActivate()) {
+                this.plugins[plugin].activate();
+            }
+        })
 
-        if (true === this.options['block-editor-welcome-screen-kill']) {
-            this.turboAdminWelcomeKill = new TurboAdminWpBlockEditorWelcomeGuideKill();
-        }
+        // if (true === this.options['block-editor-fullscreen-disable']) {
+        //     // Initialise fullscreen kill
+        //     this.turboAdminFullscreenKill = new TurboAdminWpBlockEditorFullscreenKill();
+        // }
+
+        // if (true === this.options['block-editor-welcome-screen-kill']) {
+        //     this.turboAdminWelcomeKill = new TurboAdminWpBlockEditorWelcomeGuideKill();
+        // }
 
         if (true === this.options['list-table-keyboard-shortcuts']) {
             this.turboAdminListTableShortcuts = new TurboAdminListTableShortcuts();
-        }
-
-        if (true === this.options['barkeeper']) {
-            // In the plugin, barkeeper-state will be in... local storage(?)
-            if ('object' !== typeof(browser)) {
-                this.options['barkeeper-state'] = window.localStorage.getItem('turboAdminBarkeeperState');
-            }
-            this.turboAdminBarkeeper = new TurboAdminBarkeeper(this.options['barkeeper-state']);
         }
 
         // Add other things if we're logged in and have an API nonce
@@ -150,6 +207,22 @@ export default class TurboAdmin {
         }
     }
 
+    /**
+     * True if the plugin has been activated
+     *
+     * @param {string} name Name of the plugin to check for
+     * @returns {boolean}
+     */
+    hasActivatedPlugin(name) {
+        return Object.keys(this.plugins).includes(name) &&
+            this.plugins[name].activated;
+    }
+
+    /**
+     * Gather the WordPress dashboard admin (sidebar) menu items
+     *
+     * @returns { TurboAdminMenuItem[] }
+     */
     getMenu() {
         const items = [];
         const menuTop = document.getElementById('adminmenu');
@@ -183,6 +256,10 @@ export default class TurboAdmin {
         return items;
     }
 
+    /**
+     * Adds additional menu items passed in by configuration to the
+     * menu items list.
+     */
     addAdditionalMenuItems() {
 
         /*
@@ -206,7 +283,15 @@ export default class TurboAdmin {
          */
 
         // Get passed-in extraItems
+        // Technically this is an array of {ItemDefintion} but more work needed to make that happen.
         let extraItems = this.options.extraItems ?? [];
+
+        // Get any extra items defined by plugins
+        const pluginKeys = Object.keys(this.plugins);
+
+        for (let i=0; i < pluginKeys.length; i++) {
+            extraItems = extraItems.concat(this.plugins[pluginKeys[i]].getAdditionalItemDefinitions());
+        }
 
         // Merge in defaults
         extraItems = extraItems.concat(
@@ -287,37 +372,6 @@ export default class TurboAdmin {
                     'itemTitleFunction': (element) => 'Network Admin: ' + element.textContent,
                     'itemUrlFunction': (element) => element.href
                 },
-                {
-                    'detectType': 'dom',
-                    'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-my-sites-list .ab-submenu a',
-                    'itemTitleFunction': (element) => "Sites: " + element.closest('.menupop').querySelector('a').innerText + ' - ' + element.innerText,
-                    'itemUrlFunction': (element) => element.href
-                },
-                // Oxygen builder items
-                {
-                    'detectType': 'dom',
-                    'detectSelector': '#ct-edit-template-builder',
-                    'itemTitleFunction': () => 'Edit with Oxygen',
-                    'itemUrlFunction': (element) => element.href,
-                    'noCache': true
-                },
-                // It's worth noting that the Oxygen Builder doesn't use a /wp-admin URL
-                // and so kinda appears to Turbo Admin to be a "front-end" page and it
-                // doesn't refresh the menu items.
-                {
-                    'detectType': 'dom',
-                    'detectSelector': '.oxygen-back-to-wp-menu .oxygen-toolbar-button-dropdown a:not(:last-of-type)',
-                    'itemTitleFunction': (element) => 'Back to WP: ' + element.textContent,
-                    'itemUrlFunction': (element) => {
-                        if (element.href) {
-                            return element.href;
-                        } else {
-                            let url = new URL(window.location.href);
-                            return url.origin + url.pathname;
-                        }
-                    },
-                    'noCache': true
-                }
             ]
         );
 
@@ -358,12 +412,28 @@ export default class TurboAdmin {
         })
     }
 
+    /**
+     * Builds the palette HTML and adds it to the DOM.
+     */
     addPalette() {
         const container = document.createElement('div');
         container.id = 'ta-command-palette-container';
         // Palette
         const palette = document.createElement('div');
         palette.id = 'ta-command-palette';
+        // Palette notice
+        const paletteNotice = document.createElement('div');
+        paletteNotice.id = 'ta-command-palette-notice';
+        // Tab notice
+        const tabNotice = document.createElement('div');
+        tabNotice.id = 'ta-command-palette-tab-notice';
+        // Tab notice text
+        const tabNoticeText = document.createElement('span');
+        tabNoticeText.id = 'ta-command-palette-tab-notice-text';
+        // Tab notice "button"
+        const tabNoticeButton = document.createElement('span');
+        tabNoticeButton.id = 'ta-command-palette-tab-notice-button';
+        tabNoticeButton.innerText = 'Tab';
         // Input field
         const input = document.createElement('input');
         input.id = "ta-command-palette-input";
@@ -371,13 +441,29 @@ export default class TurboAdmin {
         input.type = "text";
         // Set this to stop stuff trying to fill it.
         input.setAttribute('autocomplete', 'off');
+        // Search mode tag
+        const searchModeTag = document.createElement('div');
+        searchModeTag.id = 'ta-command-palette-search-mode-tag';
+        // List container (needed to contain the main list and the submenu list)
+        const listContainer = document.createElement('div');
+        listContainer.id = "ta-command-palette-items-container";
         // List
         const list = document.createElement('ul');
         list.id = "ta-command-palette-items";
+        // Sub-menu list
+        const submenuContainer = document.createElement('div');
+        submenuContainer.id = "ta-command-palette-submenu-container";
         // Join it all up
         container.appendChild(palette);
+        palette.appendChild(searchModeTag);
+        palette.appendChild(paletteNotice);
+        tabNotice.appendChild(tabNoticeText);
+        tabNotice.appendChild(tabNoticeButton);
+        palette.appendChild(tabNotice);
         palette.appendChild(input);
-        palette.appendChild(list);
+        listContainer.appendChild(list);
+        listContainer.appendChild(submenuContainer);
+        palette.appendChild(listContainer);
 
         if (document.getElementById('wpadminbar') && this.options['admin-bar-search'] === true) {
             const paletteLi = document.createElement('li');
@@ -394,13 +480,41 @@ export default class TurboAdmin {
             placeholder.innerText = this.buildShortcutKeysString();
             placeholder.addEventListener('click', e => input.focus());
 
-            palette.insertBefore( placeholder, list );
+            palette.insertBefore( placeholder, listContainer );
         } else {
             // Container
             document.querySelector(this.options.appendToElement ?? 'body').appendChild(container);
         }
     }
 
+    /**
+     * Register a plugin with Turbo Admin
+     *
+     * @param {TurboAdminPlugin} plugin
+     */
+    registerPlugin(plugin) {
+        console.log('Registering plugin ' + plugin.name);
+        this.plugins[plugin.name] = plugin;
+    }
+
+    /**
+     * Register a palette search mode and its associated plugin
+     *
+     * this is usually bound to the searchMode, so
+     *
+     * @param {SearchMode} searchMode
+     */
+    registerSearchMode(searchMode) {
+        console.log('Registering search mode with keyword ' + searchMode.keyword);
+        // Don't use `this` as we are bound!
+        globalThis.turboAdmin.searchModes[searchMode.keyword] = searchMode;
+    }
+
+    /**
+     * Returns a string representation of the palette's keyboard shortcut
+     *
+     * @returns { String }
+     */
     buildShortcutKeysString () {
         let keysString = '';
         let shortcut = this.options.shortcutKeys[0];
@@ -417,7 +531,7 @@ export default class TurboAdmin {
         if ( shortcut.shift ) {
             keysString += 'Shift-';
         }
-        keysString += shortcut.key.toUpperCase();
+        keysString += shortcut.key;
         return keysString;
     }
 

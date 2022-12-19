@@ -17,8 +17,10 @@
  */
 
 import Fuse from './fuse-6.4.6.js';
-import TurboAdminMenuItem from './class-turbo-admin-menu-item';
-import ContentApi from './class-content-api.js';
+import TurboAdminMenuItem from './types/class-turbo-admin-menu-item';
+import ContentApi from './apis/class-content-api.js';
+import SearchMode from './types/class-search-mode.js';
+import ContentItem from './types/class-content-item.js';
 
 export default class TurboAdminPalette {
 
@@ -34,15 +36,47 @@ export default class TurboAdminPalette {
         this.paletteInnerElement = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette'));
 		/** @type {HTMLInputElement} */
         this.paletteInputElement = /** @type {HTMLInputElement} */ (document.getElementById('ta-command-palette-input'));
+		/** @type {HTMLDivElement} */
+        this.paletteItemsContainerElement = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette-items-container'));
 		/** @type {HTMLUListElement} */
         this.paletteItemsElement = /** @type {HTMLUListElement} */ (document.getElementById('ta-command-palette-items'));
+		/** @type {HTMLDivElement} */
+        this.paletteSubmenuContainerElement = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette-submenu-container'));
+        /** @type {HTMLDivElement} */
+        this.paletteSearchModeTag = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette-search-mode-tag'));
+        /** @type {HTMLDivElement} */
+        this.paletteSearchModeTabNotice = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette-tab-notice'));
+        /** @type {HTMLSpanElement} */
+        this.paletteSearchModeTabNoticeText = /** @type {HTMLSpanElement} */ (document.getElementById('ta-command-palette-tab-notice-text'));
+        /** @type {HTMLDivElement} */
+        this.paletteNoticeElement = /** @type {HTMLDivElement} */ (document.getElementById('ta-command-palette-notice'));
+
+
+        // Add a class if the menu needs refreshing with a visit to the Dashboard
+        if (globalThis.turboAdmin.menuNeedsRefresh) {
+            this.showPaletteNotice('Menu needs refreshing. Visit the Dashboard to refresh.');
+        }
+
+        // We need this when injecting items. We use it to help generate edit URLs. Not the best way but
+        // works for now.
+        /** @type {HTMLUListElement} */
+        this.profileLinkElem = document.getElementById('wp-admin-bar-edit-profile');
+        /** @type {null|String} */
+        this.profileLink = null;
+        if (this.profileLinkElem) {
+            this.profileLink = this.profileLinkElem.querySelector('a').href;
+        }
 
 		// Get palette data
 		this.paletteData = paletteData;
 
-        // Get post type data from API
-        this.postTypes = [];
-        this.fetchPostTypes();
+        // Backup of the palette data for use when we enter a different search mode
+		this.paletteDataBackup = null;
+		this.paletteItemsBackup = null;
+        this.paletteItemIndexBackup = null;
+
+        // Current search modes/keyword
+        this.searchMode = null;
 
         // paletteItems is the list of 'li' elements used to build the palette
         this.paletteItems = [];
@@ -104,24 +138,16 @@ export default class TurboAdminPalette {
         return this.isMac() ? e.metaKey : e.ctrlKey;
     }
 
-    fetchPostTypes() {
-        if (! globalThis.contentApi.active) {
-            this.postTypes = [];
-            return;
-        }
-
-        globalThis.contentApi.get('types').then(
-            response => {
-                response.json().then(
-                    types => {
-                        this.postTypes = types;
-                    }
-                );
-            }
-        );
+    inSearchMode() {
+        return this.searchMode !== null;
     }
 
-	buildPaletteItems() {
+	/**
+     * This converts this.paletteData into a list of paletteListItems in this.paletteItems
+     *
+     * It also builds the itemIndex
+     */
+    buildPaletteItems() {
         this.paletteItems = [];
         this.itemIndex = {};
 
@@ -154,119 +180,118 @@ export default class TurboAdminPalette {
         return Boolean(this.itemIndex[url]);
     }
 
-    injectContentItems(contentItems) {
+    /**
+     * Clears and sets the content items
+     *
+     * @param {ContentItem[]} contentItems
+     */
+    setContentItems(contentItems) {
+        this.paletteItems = [];
+        this.itemIndex = [];
+        this.injectContentItems(contentItems, false);
+    }
+
+    /**
+     * Content items have:
+     *  title
+     *  subtype
+     *  url
+     *  (we should also make the sub-menu definable, but that's not done yet)
+     *
+     * @param {ContentItem[]} contentItems
+     */
+    injectContentItems(contentItems, andRunSearch = true) {
         console.log('Injecting items');
 
-        // We'll need this in the loop below.
-        const profileLinkElem = document.getElementById('wp-admin-bar-edit-profile');
-        let profileLink = null;
-        if (profileLinkElem) {
-            profileLink = profileLinkElem.querySelector('a').href;
-        }
-
-        // TODO: Can we not do this on every content item inject?
-        // Check for presence of Oxygen Page builder
-        /** @type {HTMLElement|string|Number} */
-        let oxygenLinkElem = document.getElementById('toplevel_page_ct_dashboard_page');
-        // Also check for a menu bar item
-        if (! oxygenLinkElem) {
-            oxygenLinkElem = document.getElementById('wp-admin-bar-oxygen_admin_bar_menu');
-        }
-        // Check to see if Oxygen link is cached
-        if (! oxygenLinkElem) {
-            oxygenLinkElem = Number(window.localStorage.getItem('ta-has-oxygen-builder'));
-        }
-        // Save Oxygen builder status
-        window.localStorage.setItem('ta-has-oxygen-builder', Boolean(oxygenLinkElem) ? '1' : '0' );
-
         if (contentItems.length > 0) {
-            contentItems.forEach(item => {
-                const itemTitle = item.title;
-                // const itemTitle = item.title.rendered;
-                const itemType = item.subtype;
-                const itemUrl = item.url;
-
-                // console.log('Adding item: ' + itemTitle);
-
-                // // Check if item already exists
-                if (this.contentItemExists(itemUrl)) {
-                    console.log('Not adding duplicate');
-                    return;
-                }
-
-                const itemTypeName = this.postTypes[itemType] ? this.postTypes[itemType].name : itemType;
-                const title = `${itemTitle} (${itemTypeName})`;
-
-                const li = document.createElement('li');
-                const a = document.createElement('a');
-                const subMenu = document.createElement('div');
-                const subMenuTitle = document.createElement('div');
-                const subMenuItems = document.createElement('ul');
-                subMenu.classList.add('ta-submenu');
-                subMenuTitle.classList.add('ta-submenu-title');
-
-                subMenuTitle.textContent = this.htmlDecode(itemTitle);
-                subMenuItems.classList.add('ta-submenu-items');
-                subMenu.appendChild(subMenuTitle);
-                subMenu.appendChild(subMenuItems);
-
-                const subMenuItem1 = document.createElement('li');
-                const subMenuLink1 = document.createElement('a');
-                subMenuLink1.innerText = "View";
-                subMenuLink1.href = itemUrl;
-                subMenuItem1.appendChild(subMenuLink1);
-                subMenuItems.appendChild(subMenuItem1);
-
-                if (profileLink) {
-                    // Need to get edit URL. This seems like the best way for now.
-                    const editLink = profileLink.replace('profile.php', `post.php?post=${item.id}&action=edit`);
-
-                    const subMenuItem2 = document.createElement('li');
-                    const subMenuLink2 = document.createElement('a');
-                    subMenuLink2.innerText = "Edit";
-                    subMenuLink2.href = editLink;
-                    subMenuItem2.appendChild(subMenuLink2);
-                    subMenuItems.appendChild(subMenuItem2);
-                }
-
-                if (oxygenLinkElem) {
-                    // Oxygen Edit Links are like: https://example.com.com/?page_id=26&ct_builder=true&ct_inner=true
-                    const oxygenLink = globalThis.taWp.home + `?page_id=${item.id}&ct_builder=true&ct_inner=true`;
-
-                    const subMenuItem3 = document.createElement('li');
-                    const subMenuLink3 = document.createElement('a');
-                    subMenuLink3.innerText = "Edit with Oxygen";
-                    subMenuLink3.href = oxygenLink;
-                    subMenuItem3.appendChild(subMenuLink3);
-                    subMenuItems.appendChild(subMenuItem3);
-                }
-
-                const subMenuItem3 = document.createElement('li');
-                const subMenuLink3 = document.createElement('a');
-                subMenuLink3.innerText = "Copy link";
-                // Because this is an href we're setting it gets URI encoded!
-                subMenuLink3.href = itemUrl;
-                subMenuLink3.setAttribute('data-action', 'clipboard');
-                subMenuItem3.appendChild(subMenuLink3);
-                subMenuItems.appendChild(subMenuItem3);
-
-
-                li.classList.add('ta-has-child-menu');
-
-                li.appendChild(a);
-                li.appendChild(subMenu);
-
-                a.href = itemUrl;
-                a.innerHTML = title;
-                this.addPaletteListItem(li);
-            })
+            contentItems.forEach(this.injectItem.bind(this));
         }
 
-        // Reset the search to work on the new items
-        this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
-        this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
+        if (andRunSearch) {
+            // Reset the search to work on the new items
+            this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
+            this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
+        }
 
         this.updatePaletteItems();
+    }
+
+    /**
+     * Injects a single content item into the palette
+     *
+     * @param {ContentItem} item
+     */
+    injectItem(item) {
+        const itemTitle = item.title;
+        // const itemTitle = item.title.rendered;
+        const itemType = item.subtype;
+        const itemUrl = item.url;
+
+        // console.log('Adding item: ' + itemTitle);
+
+        // // Check if item already exists
+        if (this.contentItemExists(itemUrl)) {
+            console.log('Not adding duplicate');
+            return;
+        }
+
+        let title = itemTitle;
+
+        if (itemType) {
+            const itemTypeName = globalThis.contentApi.postTypes[itemType] ? globalThis.contentApi.postTypes[itemType].name : itemType;
+            title += ` (${itemTypeName})`;
+        }
+
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        let subMenu = null;
+
+        // Loop over submenu items OR add link.
+        if (item.submenuItems.length > 0) {
+
+            // Prepare the outer sub-menu elements
+            subMenu = document.createElement('div');
+            const subMenuTitle = document.createElement('div');
+            const subMenuItems = document.createElement('ul');
+            subMenu.classList.add('ta-submenu');
+            subMenuTitle.classList.add('ta-submenu-title');
+
+            subMenuTitle.textContent = this.htmlDecode(itemTitle);
+            subMenuItems.classList.add('ta-submenu-items');
+            subMenu.appendChild(subMenuTitle);
+
+            for (let i = 0; i < item.submenuItems.length; i++) {
+                const subMenuItem = item.submenuItems[i]
+                // TODO: Abstract this so sub-menus can be defined by plugins?
+                const subMenuListItem = document.createElement('li');
+                const subMenuLink = document.createElement('a');
+                subMenuLink.innerText = subMenuItem.title;
+                subMenuLink.href = subMenuItem.url;
+                for (let a = 0; a < subMenuItem.attributes.length; a++) {
+                    subMenuLink.setAttribute(
+                        subMenuItem.attributes[a].name,
+                        subMenuItem.attributes[a].value
+                    )
+                }
+                subMenuListItem.appendChild(subMenuLink);
+                subMenuItems.appendChild(subMenuListItem);
+            }
+
+            // Add the sub-menu items UL to the sub-menu element.
+            subMenu.appendChild(subMenuItems);
+
+            li.classList.add('ta-has-child-menu');
+        }
+
+        a.href = itemUrl;
+        a.innerHTML = title;
+
+        li.appendChild(a);
+        if (subMenu !== null) {
+            li.appendChild(subMenu);
+        }
+
+        this.addPaletteListItem(li);
     }
 
 	/**
@@ -284,14 +309,18 @@ export default class TurboAdminPalette {
 			} else {
 				this.showPalette();
 			}
+            return;
 		}
 
 		if (e.code === 'Escape' && this.paletteShown()) {
 			if (this.isSubMenuOpen()){
                 this.closeSubMenu();
+            } else if (this.inSearchMode()) {
+                this.leaveSearchMode();
             } else {
                 this.hidePalette();
             }
+            return;
 		}
 
         if (this.paletteShown()) {
@@ -319,27 +348,85 @@ export default class TurboAdminPalette {
 		return keysPressed;
 	}
 
+    /*
+     * Adds the tab hint for a keyword once it has been typed.
+     */
+    maybeHighlightInputKeyword(newKey) {
+        // Do nothing if we are in a search-mode
+        if (this.inSearchMode()) {
+            return;
+        }
+
+        // This is fired on "keyDown", so the value isn't update with the new key yet.
+        // But don't do this for special keys, and catch backspace too.
+        let newInputValue = this.paletteInputElement.value;
+        if (newKey.length === 1) {
+            newInputValue += newKey;
+        }
+        if (newKey === 'Backspace') {
+            newInputValue = newInputValue.slice(0, -1);
+        }
+        // console.log(`Checking palette input value ${newInputValue} for keyword`);
+        if (this.isKeyword(newInputValue)) {
+            this.paletteSearchModeTabNoticeText.innerText = `Search for ${newInputValue}`;
+            this.paletteSearchModeTabNotice.classList.add('active');
+        } else {
+            this.unhighlightInputKeyword();
+        }
+    }
+
+    unhighlightInputKeyword() {
+        this.paletteSearchModeTabNotice.classList.remove('active');
+    }
+
     async debouncedPaletteSearchAndUpdate() {
-        // If search string is not long enough for content search, then
-        // run without debounce.
-        if (
-            ( this.paletteInputElement.value !== '' && this.paletteInputElement.value.length <= 2)
-            || this.postTypes === [] ) {
+        // If we're not in a search mode then search immediately
+        if (! this.inSearchMode()) {
             this.debounceTimeout = null;
             await this.paletteSearchAndUpdate();
             return;
         }
+
         // If timer is null, reset it to 500ms and run your functions.
         // Otherwise, wait until timer is cleared
-        if (!this.debounceTimeout) {
-            this.debounceTimeout = setTimeout(async function () {
-                // Reset timeout
-                this.debounceTimeout = null;
 
-                // Run the search function
-                await this.paletteSearchAndUpdate();
-            }.bind(this), 750);
-        }
+        // Cancel the existing timeout
+        clearTimeout(this.debounceTimeout)
+
+        this.debounceTimeout = setTimeout(async function () {
+            // Reset timeout
+            this.debounceTimeout = null;
+
+            // Run the search function
+            await this.paletteSearchAndUpdate();
+        }.bind(this), 750);
+    }
+
+    /**
+     * Check if a string is a search mode keyword
+     *
+     * @param {string} inputString
+     * @returns {boolean}
+     */
+    isKeyword(inputString) {
+        return Object.keys(globalThis.turboAdmin.searchModes).includes(inputString);
+    }
+
+    /**
+     * Show the palette notice with the specified text
+     *
+     * @param {string} text
+     */
+    showPaletteNotice(text) {
+        this.paletteNoticeElement.classList.add('active');
+        this.paletteNoticeElement.innerText = text;
+    }
+
+    /**
+     * Hide the palette notice
+     */
+    hidePaletteNotice() {
+        this.paletteNoticeElement.classList.remove('active');
     }
 
 	/**
@@ -360,20 +447,148 @@ export default class TurboAdminPalette {
 			return;
 		}
 		if (e.code === 'Enter' && this.paletteShown()) {
+            e.preventDefault();
             this.doAction(this.metaPressed(e));
             return;
 		}
+
+        /*
+         * Only the actions above can be done in sub-menus.
+         */
         if (this.isSubMenuOpen()) {
             return;
         }
+
+        /*
+         * Check for a keyword being typed and add a UI hint.
+         */
+        this.maybeHighlightInputKeyword(e.key);
+
+        /*
+         * Tabbing looks for a search mode keyword.
+         */
+        if (! this.inSearchMode() && (e.code === 'Tab' || e.key === ':')) {
+            console.log('Checking for search mode');
+            let inputValue = this.paletteInputElement.value;
+            if (this.isKeyword(inputValue)) {
+                console.log('Found search mode ' + inputValue)
+                e.preventDefault();
+                // TODO: Work on this.
+                await this.enterSearchMode(
+                    globalThis.turboAdmin.searchModes[inputValue]);
+                return;
+            }
+        }
+
+        /*
+         * Backspace may exit us from a search mode
+         */
+        if (this.inSearchMode() && e.code === 'Backspace' && this.paletteInputElement.value === '') {
+            e.preventDefault();
+            this.leaveSearchMode();
+            return;
+        }
+
 		await this.debouncedPaletteSearchAndUpdate();
 	}
 
+    /**
+     * Puts the palette into a specific search mode - used when a keyword is selected
+     *
+     * @param {SearchMode} searchMode
+     */
+    async enterSearchMode(searchMode) {
+        console.log('Entering search mode for keyword ' + searchMode.keyword);
+        this.backupPaletteData();
+
+        this.paletteData = [];
+        this.paletteItems = [];
+        this.itemIndex = [];
+
+        // Remove the notice if it's there
+        this.hidePaletteNotice();
+
+        this.searchMode = searchMode;
+        this.paletteInputElement.value = '';
+        this.addSearchModeTag(searchMode.displayName);
+        this.unhighlightInputKeyword();
+        this.updatePaletteItems();
+        // This is similar to code in paletteSearch - maybe we could extract/abstract it?
+        if (searchMode.defaultItemsCallback !== null) {
+            this.paletteInnerElement.classList.add('loading');
+            const results = await searchMode.defaultItemsCallback();
+            this.setContentItems(results);
+            // this.injectContentItems(results);
+            this.paletteInnerElement.classList.remove('loading');
+        }
+    }
+
+    /**
+     * Leaves the current search mode
+     */
+    leaveSearchMode() {
+        const searchMode = this.searchMode;
+        // It's important what we set this to - see inSearchMode()
+        this.searchMode = null;
+        this.removeSearchModeTag();
+        this.restorePaletteData();
+        this.paletteInputElement.value = searchMode.keyword;
+        this.maybeHighlightInputKeyword('');
+        this.paletteSearchAndUpdate();
+    }
+
+    /**
+     * Backups up the palette data to a local variable so that it can be
+     * restored later.
+     */
+    backupPaletteData() {
+        this.paletteDataBackup = this.paletteData;
+        this.paletteItemsBackup = this.paletteItems;
+        this.paletteItemIndexBackup = this.itemIndex;
+    }
+
+    /**
+     * Restores the save palette data - does not rebuild anything
+     */
+    restorePaletteData() {
+        this.paletteData = this.paletteDataBackup;
+        this.paletteItems = this.paletteItemsBackup;
+        this.itemIndex = this.paletteItemIndexBackup;
+    }
+
+    /**
+     * Adds the search mode tag with the specified title.
+     *
+     * @param {string} title
+     */
+    addSearchModeTag(title) {
+        this.paletteSearchModeTag.classList.add('active');
+        this.paletteSearchModeTag.innerText = title;
+    }
+
+    /**
+     * Removes the search mode tag
+     */
+    removeSearchModeTag() {
+        this.paletteSearchModeTag.classList.remove('active');
+    }
+
+    isPaletteOpen() {
+        return this.paletteElement?.classList.contains('active');
+    }
+
 	showPalette() {
-		this.paletteInputElement.value = '';
-        this.paletteItemsElement.scrollTop = 0;
-		this.paletteElement?.classList.add('active');
+        // Bail if already shown (this can be triggered by a focus event)
+        if (this.isPaletteOpen()) {
+            return;
+        }
+
+        this.paletteInputElement.value = '';
 		this.paletteInputElement?.focus();
+		this.paletteElement?.classList.add('active');
+        // This is needed in admin-bar mode otherwise it gets a weird already-scrolled thing when
+        // the palette opens.
+        setTimeout(() => this.paletteItemsElement.scrollTop = 0, 100);
 	}
 
 	hidePalette() {
@@ -383,6 +598,9 @@ export default class TurboAdminPalette {
         this.paletteInputElement.blur();
         if (this.isSubMenuOpen()) {
             this.closeSubMenu();
+        }
+        if (this.searchMode !== null) {
+            this.leaveSearchMode();
         }
 	}
 
@@ -412,7 +630,7 @@ export default class TurboAdminPalette {
 
 	setSelectedElement() {
         if (this.isSubMenuOpen()) {
-            this.paletteItemsElement?.querySelectorAll('.ta-submenu.active li.selected')?.forEach(e => e.classList.remove('selected'));
+            this.paletteSubmenuContainerElement?.querySelectorAll('.ta-submenu li.selected')?.forEach(e => e.classList.remove('selected'));
             this.selectedSubItem.classList.add('selected');
         } else {
             this.paletteItemsElement?.querySelectorAll('li.selected')?.forEach(e => e.classList.remove('selected'));
@@ -488,11 +706,11 @@ export default class TurboAdminPalette {
     }
 
     openSubMenu(subMenuElement) {
+        this.paletteSubmenuContainerElement.replaceChildren(subMenuElement);
         // Set height in case main menu is smaller than sub menu
-        const subMenuHeight = subMenuElement.offsetHeight;
-        this.paletteItemsElement.style.minHeight = subMenuHeight + "px";
-        subMenuElement.classList.add('active');
-
+        const subMenuHeight = this.paletteSubmenuContainerElement.offsetHeight;
+        this.paletteItemsContainerElement.style.minHeight = subMenuHeight + "px";
+        this.paletteSubmenuContainerElement.classList.add('active');
 
         this.selectedSubItem = subMenuElement.querySelector('li');
         this.openedSubMenu = subMenuElement;
@@ -507,9 +725,9 @@ export default class TurboAdminPalette {
         if (null === subMenuElement) {
             subMenuElement = document.querySelector('.ta-submenu.active');
         }
-        subMenuElement.classList.remove('active');
+        this.paletteSubmenuContainerElement.classList.remove('active');
         this.selectedSubItem.classList.remove('active');
-        this.paletteItemsElement.style.minHeight = 'auto';
+        this.paletteItemsContainerElement.style.minHeight = 'auto';
         this.selectedSubItem = null;
         this.openedSubMenu = null;
         this.paletteInputElement.disabled = false;
@@ -534,6 +752,12 @@ export default class TurboAdminPalette {
         this.hidePalette();
         const link = item.querySelector('a');
         const url = link.href;
+
+        // link.href will be interpolated by the browser, so if it's empty it will be the current page
+        // use getAttribute instead to work out if its empty
+        if (link.getAttribute('href') === '') {
+            return;
+        }
 
         if ('clipboard' === link.dataset.action) {
             navigator.clipboard.writeText(url);
@@ -560,26 +784,50 @@ export default class TurboAdminPalette {
         // Get the value...
         // const response = await globalThis.contentApi.get('posts', { search: this.paletteInputElement.value, per_page: 100, status: ['publish', 'future', 'draft', 'pending', 'private'] });
 
-        this.buildPaletteItems();
+        if (! this.searchMode) {
+            this.buildPaletteItems();
 
-        if (this.paletteInputElement.value !== '') {
-            // Reset the search to work on the new items
-            this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
-            this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
+            if (this.paletteInputElement.value !== '') {
+                // Reset the search to work on the new items
+                this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
+                this.paletteItems = this.paletteFuse.search(this.paletteInputElement.value).map(i => i.item);
+            }
+            return;
         }
 
-        // Content search - don't search everything!
-        if (globalThis.contentApi.active && this.postTypes !== [] && this.paletteInputElement.value.length > 2) {
+        if (this.paletteInputElement.value.length === 0) {
             this.paletteInnerElement.classList.add('loading');
-
-            globalThis.contentApi.getPosts(this.paletteInputElement.value)
-                .then(
-                    results => {
-                            this.injectContentItems(results);
-                            this.paletteInnerElement.classList.remove('loading');
-                    }
-                )
+            let results = [];
+            if (this.searchMode.defaultItemsCallback !== null) {
+                results = await this.searchMode.defaultItemsCallback();
+            }
+            this.setContentItems(results);
+            // this.injectContentItems(results);
+            this.paletteInnerElement.classList.remove('loading');
+        } else {
+            // This is copied to enterSearchMode. Should probably be extracted.
+            this.paletteInnerElement.classList.add('loading');
+            const results = await this.searchMode.searchCallback(this.paletteInputElement.value);
+            this.setContentItems(results);
+            // this.injectContentItems(results);
+            this.paletteInnerElement.classList.remove('loading');
         }
+
+        /**
+         * OLD CODE BELOW
+         */
+        // Content search - don't search everything!
+        // if (globalThis.contentApi.active && this.postTypes !== [] && this.paletteInputElement.value.length > 2) {
+        //     this.paletteInnerElement.classList.add('loading');
+
+        //     globalThis.contentApi.getPosts(this.paletteInputElement.value)
+        //         .then(
+        //             results => {
+        //                     this.injectContentItems(results);
+        //                     this.paletteInnerElement.classList.remove('loading');
+        //             }
+        //         )
+        // }
 	}
 
 	updatePaletteItems() {

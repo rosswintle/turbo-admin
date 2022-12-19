@@ -1,10 +1,31 @@
-export default class TurboAdminBarkeeper {
+import TurboAdminPlugin from '../types/class-turbo-admin-plugin.js';
 
-    constructor(barkeeperState) {
+export default class TurboAdminBarkeeper extends TurboAdminPlugin {
+    constructor() {
+        super('Barkeeper');
+    }
+
+    /**
+     * Should the plugin activate
+     *
+     * @returns {boolean}
+     */
+    shouldActivate() {
+        if (true !== globalThis.turboAdmin.options['barkeeper']) {
+            return false;
+        }
         // Bail if we aren't in the admin
         if (! document.getElementById('wpadminbar')) {
-            return;
+            return false;
         }
+        return true;
+    }
+
+    /**
+     * Activate and initialise the plugin
+     */
+    activate() {
+        super.activate();
 
         this.exclusionIds = [
             'wp-admin-bar-menu-toggle',
@@ -13,7 +34,7 @@ export default class TurboAdminBarkeeper {
             'wp-admin-bar-updates',
         ];
 
-        this.barkeeperState = barkeeperState;
+        this.barkeeperState = globalThis.turboAdmin.options['barkeeper-state'];
 
         this.root = document.getElementById('wp-admin-bar-root-default');
         this.itemsToHide = document.querySelectorAll( '#wp-admin-bar-root-default > li');
@@ -39,14 +60,10 @@ export default class TurboAdminBarkeeper {
 
             this.barkeeperState = this.barkeeperState === 'open' ? 'closed' : 'open';
 
-            if ('object' === typeof(browser)) {
-                browser.runtime.sendMessage({
-                    'action': 'barkeeperSetState',
-                    'barkeeperState': this.barkeeperState,
-                });
-            } else {
-                window.localStorage.setItem('turboAdminBarkeeperState', this.barkeeperState);
-            }
+            browser.runtime.sendMessage({
+                'action': 'barkeeperSetState',
+                'barkeeperState': this.barkeeperState,
+            });
         });
 
         this.root.insertAdjacentElement('afterend', this.button);
