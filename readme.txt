@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 4.9
 Tested up to: 6.1
 Requires PHP: 7.2
-Stable tag: 1.12.0
+Stable tag: 1.12.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,9 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.12.1 =
+* Version bump for publishing
 
 = 1.12.0 =
 * [FEATURE] Search modes
