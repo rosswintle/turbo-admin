@@ -78,7 +78,7 @@ export default class ContentApi {
             return;
         }
 
-        const postTypes = await chrome.storage.local.get('ta-post-types');
+        const postTypes = await this.store.get('ta-post-types');
 
         // Check local storage cache
         if (postTypes && postTypes['ta-post-types'] && postTypes['ta-post-types']['expiry'] > Date.now()) {
@@ -92,7 +92,7 @@ export default class ContentApi {
 
         // Cache for 10 minutes
         const expiry = Date.now() + (10 * 60 * 1000);
-        chrome.storage.local.set({
+        this.store.set({
             'ta-post-types': {
                 expiry: expiry,
                 data: this.postTypes
