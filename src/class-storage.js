@@ -31,7 +31,7 @@ export default class Storage {
      * Returns true if we are in the extension.
      */
     inExtension() {
-        return 'undefined' !== typeof (chrome.storage);
+        return window.turboAdminIsExtension();
     }
 
     /**

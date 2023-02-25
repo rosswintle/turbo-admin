@@ -15,6 +15,10 @@ window.turboAdminLog = function() {
     }
 }
 
+window.turboAdminIsExtension = function() {
+    return 'undefined' !== typeof (chrome.storage);
+}
+
 // Use this to clear storage
 // chrome.storage.local.remove(taStorageKey).then();
 
