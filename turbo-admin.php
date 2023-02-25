@@ -8,7 +8,7 @@
  * Author URI:      https://rosswintle.uk/
  * Text Domain:     turbo-admin
  * Domain Path:     /languages
- * Version:         1.12.1
+ * Version:         1.13.1
  *
  * @package         Turbo_Admin
  */
@@ -36,6 +36,7 @@ define('TURBO_ADMIN_HIDE_NOTICES_META_NAME', 'turbo-admin-hide-notices');
 define('TURBO_ADMIN_ADMIN_BAR_SEARCH_META_NAME', 'turbo-admin-admin-bar-search');
 define('TURBO_ADMIN_BARKEEPER_META_NAME', 'turbo-admin-barkeeper');
 define('TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME', 'turbo-admin-list-table-shortcuts');
+define('TURBO_ADMIN_DEBUG_MODE_NAME', 'turbo-admin-debug-mode');
 
 function add_admin_scripts()
 {
@@ -45,6 +46,7 @@ function add_admin_scripts()
         $adminBarSearch     = get_user_meta( get_current_user_id(), TURBO_ADMIN_ADMIN_BAR_SEARCH_META_NAME, true );
         $barkeeper          = get_user_meta( get_current_user_id(), TURBO_ADMIN_BARKEEPER_META_NAME, true );
         $listTableShortcuts = get_user_meta( get_current_user_id(), TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, true );
+        $debugMode          = get_user_meta( get_current_user_id(), TURBO_ADMIN_DEBUG_MODE_NAME, true );
 
 		// We will pass an array of shortcut key objects into the JS
 		$shortcutKeys = [
@@ -60,6 +62,7 @@ function add_admin_scripts()
             'adminBarSearch'     => intval( $adminBarSearch ) === 1,
             'barkeeper'          => intval( $barkeeper ) === 1,
             'listTableShortcuts' => intval( $listTableShortcuts ) === 1,
+            'debugMode'          => intval( $debugMode ) === 1,
 		] );
 	}
 }
@@ -127,6 +130,7 @@ function show_profile_fields($user)
     $adminBarSearch     = get_user_meta( get_current_user_id(), TURBO_ADMIN_ADMIN_BAR_SEARCH_META_NAME, true );
     $barkeeper          = get_user_meta( get_current_user_id(), TURBO_ADMIN_BARKEEPER_META_NAME, true );
     $listTableShortcuts = get_user_meta( get_current_user_id(), TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, true );
+    $debugMode          = get_user_meta( get_current_user_id(), TURBO_ADMIN_DEBUG_MODE_NAME, true );
 ?>
 	<h3><?php _e('Turbo Admin settings', 'turbo_admin') ?></h3>
 	<table class="form-table">
@@ -191,6 +195,11 @@ function show_profile_fields($user)
                     <input name="turbo-admin-list-table-shortcuts" type="checkbox" id="turbo-admin-list-table-shortcuts" value="1" <?php checked($listTableShortcuts) ?>>
                     List table shortcuts (experimental)
                 </label>
+                <br>
+                <label for="turbo-admin-debug-mode">
+                    <input name="turbo-admin-debug-mode" type="checkbox" id="turbo-admin-debug-mode" value="1" <?php checked($debugMode) ?>>
+                    Debug mode (lots of console.log!)
+                </label>
             </td>
         </tr>
 	</table>
@@ -240,6 +249,11 @@ function save_extra_profile_fields($user_id)
         update_user_meta($user_id, TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, $_POST['turbo-admin-list-table-shortcuts']);
     } else {
         update_user_meta($user_id, TURBO_ADMIN_LIST_TABLE_SHORTCUTS_NAME, 0);
+    }
+    if (isset($_POST['turbo-admin-debug-mode']) && in_array(intval($_POST['turbo-admin-debug-mode']), [0, 1], true) ) {
+        update_user_meta($user_id, TURBO_ADMIN_DEBUG_MODE_NAME, $_POST['turbo-admin-debug-mode']);
+    } else {
+        update_user_meta($user_id, TURBO_ADMIN_DEBUG_MODE_NAME, 0);
     }
 }
 
