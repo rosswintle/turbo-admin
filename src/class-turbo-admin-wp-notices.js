@@ -141,7 +141,7 @@ turboAdminLog('Notices', notices);
         // }
 
         // Add a mutation observer to check for notices added by JavaScript
-        this.addObserver();
+        // this.addObserver();
     }
 
     addObserver() {
@@ -158,9 +158,9 @@ turboAdminLog('Notices', notices);
                 mutation.addedNodes.forEach( node => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
                         console.log('MUTATING!!!' + node.id);
-                        this.maybeAddIdToNotice(node);
-                        this.maybeAddMoveButtonToNotice(node);
-                        this.maybeHideNotice(node);
+                        // this.maybeAddIdToNotice(node);
+                        // this.maybeAddMoveButtonToNotice(node);
+                        // this.maybeHideNotice(node);
                     }
                 });
             }
@@ -313,6 +313,9 @@ turboAdminLog('Notices', notices);
 
     hideNotice(noticeElem) {
         noticeElem.classList.add('ta-notice-hidden');
+        // WPCore's common.js will re-add the notice below the dashboard header unless it has a .inline class.
+        // It does: $( 'div.updated, div.error, div.notice' ).not( '.inline, .below-h2' ).insertAfter( $headerEnd );
+        noticeElem.classList.add('inline');
         // See Toolbelt's implementation: https://github.com/BinaryMoon/wp-toolbelt/blob/dev/modules/tidy-notifications/src/js/script.js
         this.noticesPanelInner.append(noticeElem);
     }
