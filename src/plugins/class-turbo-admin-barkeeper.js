@@ -38,7 +38,7 @@ export default class TurboAdminBarkeeper extends TurboAdminPlugin {
             'wp-admin-bar-updates',
         ];
 
-        this.barkeeperState = globalThis.turboAdmin.options['barkeeper-state'];
+        this.barkeeperState = this.getBarkeeperState();
 
         this.root = document.getElementById('wp-admin-bar-root-default');
         if (! this.root) {
@@ -67,13 +67,28 @@ export default class TurboAdminBarkeeper extends TurboAdminPlugin {
 
             this.barkeeperState = this.barkeeperState === 'open' ? 'closed' : 'open';
 
-            chrome.runtime.sendMessage({
-                'action': 'barkeeperSetState',
-                'barkeeperState': this.barkeeperState,
-            });
+            this.setBarkeeperState(this.barkeeperState);
         });
 
         this.root.insertAdjacentElement('afterend', this.button);
     }
 
+    getBarkeeperState() {
+        if (window.turboAdminIsExtension()) {
+            return globalThis.turboAdmin.options['barkeeper-state'];
+        } else {
+            return window.localStorage.getItem('turbo-admin-barkeeper-state');
+        }
+    }
+
+    setBarkeeperState(state) {
+        if (window.turboAdminIsExtension()) {
+            chrome.runtime.sendMessage({
+                'action': 'barkeeperSetState',
+                'barkeeperState': this.barkeeperState,
+            });
+        } else {
+            window.localStorage.setItem('turbo-admin-barkeeper-state', state);
+        }
+    }
 }
