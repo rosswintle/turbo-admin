@@ -116,7 +116,13 @@ export default class WoocommerceApi {
             return false;
         }
         if ( (response.status < 200 || response.status >= 300) ) {
-            globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('WooCommerce API Error. Try visiting the dashboard to refresh things.');
+            // TODO: Set a "deferred" notice to show when the palette is created?
+            if (globalThis.turboAdmin && globalThis.turboAdmin.turboAdminPalette) {
+                globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('WooCommerce API Error. Try visiting the dashboard to refresh things.');
+            } else {
+                // Always log this as people may look
+                turboAdminLog('TURBO ADMIN: WooCommerce API Error. Try visiting the WordPress Dashboard to refresh things.');
+            }
         }
 
         return response;

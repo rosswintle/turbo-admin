@@ -26,7 +26,7 @@ export default class TurboAdminPalette {
 
 	constructor(paletteData, options) {
 
-		console.log('Initialising TurboAdmin');
+		turboAdminLog('Initialising TurboAdmin');
 
         this.options = options;
 
@@ -201,7 +201,7 @@ export default class TurboAdminPalette {
      * @param {ContentItem[]} contentItems
      */
     injectContentItems(contentItems, andRunSearch = true) {
-        console.log('Injecting items');
+        turboAdminLog('Injecting items');
 
         if (contentItems.length > 0) {
             contentItems.forEach(this.injectItem.bind(this));
@@ -227,11 +227,11 @@ export default class TurboAdminPalette {
         const itemType = item.subtype;
         const itemUrl = item.url;
 
-        // console.log('Adding item: ' + itemTitle);
+        // turboAdminLog('Adding item: ' + itemTitle);
 
         // // Check if item already exists
         if (this.contentItemExists(itemUrl)) {
-            console.log('Not adding duplicate');
+            turboAdminLog('Not adding duplicate');
             return;
         }
 
@@ -366,7 +366,7 @@ export default class TurboAdminPalette {
         if (newKey === 'Backspace') {
             newInputValue = newInputValue.slice(0, -1);
         }
-        // console.log(`Checking palette input value ${newInputValue} for keyword`);
+        // turboAdminLog(`Checking palette input value ${newInputValue} for keyword`);
         if (this.isKeyword(newInputValue)) {
             this.paletteSearchModeTabNoticeText.innerText = `Search for ${newInputValue}`;
             this.paletteSearchModeTabNotice.classList.add('active');
@@ -468,10 +468,10 @@ export default class TurboAdminPalette {
          * Tabbing looks for a search mode keyword.
          */
         if (! this.inSearchMode() && (e.code === 'Tab' || e.key === ':')) {
-            console.log('Checking for search mode');
+            turboAdminLog('Checking for search mode');
             let inputValue = this.paletteInputElement.value;
             if (this.isKeyword(inputValue)) {
-                console.log('Found search mode ' + inputValue)
+                turboAdminLog('Found search mode ' + inputValue)
                 e.preventDefault();
                 // TODO: Work on this.
                 await this.enterSearchMode(
@@ -498,7 +498,7 @@ export default class TurboAdminPalette {
      * @param {SearchMode} searchMode
      */
     async enterSearchMode(searchMode) {
-        console.log('Entering search mode for keyword ' + searchMode.keyword);
+        turboAdminLog('Entering search mode for keyword ' + searchMode.keyword);
         this.backupPaletteData();
 
         this.paletteData = [];

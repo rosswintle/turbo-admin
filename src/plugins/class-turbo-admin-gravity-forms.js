@@ -85,7 +85,7 @@ export default class TurboAdminGravityForms extends TurboAdminPlugin {
                 )
             )
 
-            console.log(item);
+            turboAdminLog(item);
 
             resultsArray.push(item);
         }

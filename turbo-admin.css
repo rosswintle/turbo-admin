@@ -577,7 +577,9 @@ body.wp-admin #wpbody-content > .wrap > .notice:not('.notice-success, .notice-er
 /**
  * List tables
  */
-.ta-active-table-row {
+.ta-active-table-row,
+.ta-active-table-row th,
+.ta-active-table-row td {
     background-color: #ddd !important;
 }
 

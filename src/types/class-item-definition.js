@@ -38,6 +38,13 @@ export default class ItemDefinition {
     detectSelectorNone = '';
 
     /**
+     * [OPTIONAL] A string to find in the current URL to detect the item
+     *
+     * @type {string}
+     */
+    detectPattern = '';
+
+    /**
      * A callback used to generate a menu item title from a detected element. Should be passed an
      * HTML element and should return a string
      *

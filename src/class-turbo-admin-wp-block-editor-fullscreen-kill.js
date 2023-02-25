@@ -7,6 +7,11 @@ export default class TurboAdminWpBlockEditorFullscreenKill {
 
     constructor() {
 
+        // Don't run on the site editor screen
+        if (document.body.classList.contains( 'site-editor-php' )) {
+            return;
+        }
+
         const attrObserver = new MutationObserver((mutations) => {
             mutations.forEach(mu => {
                 // Check if we already killed fullscreen

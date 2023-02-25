@@ -24,7 +24,7 @@ export default class TurboAdminPlugin {
      * Register the plugin with Turbo Admin
      */
     registerPlugin() {
-        console.log('Inside plugin - requested registration of ' + this.name);
+        turboAdminLog('Inside plugin - requested registration of ' + this.name);
         globalThis.turboAdmin.registerPlugin(this);
     }
 
@@ -56,9 +56,9 @@ export default class TurboAdminPlugin {
     /**
      * Get additional menu items to be added to the main menu
      *
-     * @return {ItemDefinition[]}
+     * @return {Promise<ItemDefinition[]>}
      */
-    getAdditionalItemDefinitions() {
+    async getAdditionalItemDefinitions() {
         return [];
     }
 

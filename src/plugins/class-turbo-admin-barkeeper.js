@@ -18,6 +18,10 @@ export default class TurboAdminBarkeeper extends TurboAdminPlugin {
         if (! document.getElementById('wpadminbar')) {
             return false;
         }
+        // Bail if we don't have the left-hand admin bar (some users only have right-hand side)
+        if (! document.getElementById('wp-admin-bar-root-default')) {
+            return false;
+        }
         return true;
     }
 
@@ -37,6 +41,9 @@ export default class TurboAdminBarkeeper extends TurboAdminPlugin {
         this.barkeeperState = globalThis.turboAdmin.options['barkeeper-state'];
 
         this.root = document.getElementById('wp-admin-bar-root-default');
+        if (! this.root) {
+            return;
+        }
         this.itemsToHide = document.querySelectorAll( '#wp-admin-bar-root-default > li');
 
         Array.from(this.itemsToHide).forEach( element => {
@@ -60,7 +67,7 @@ export default class TurboAdminBarkeeper extends TurboAdminPlugin {
 
             this.barkeeperState = this.barkeeperState === 'open' ? 'closed' : 'open';
 
-            browser.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 'action': 'barkeeperSetState',
                 'barkeeperState': this.barkeeperState,
             });

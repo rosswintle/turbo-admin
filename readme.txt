@@ -3,9 +3,9 @@ Contributors: magicroundabout
 Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
 Requires at least: 4.9
-Tested up to: 6.1
-Requires PHP: 7.2
-Stable tag: 1.12.1
+Tested up to: 6.2
+Requires PHP: 7.4
+Stable tag: 1.13.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,7 @@ PLUS the browser extension has features not present in the plugin. Some features
 * Block editor welcome guide remover
 * Live/dev site labels
 
-Remember, the browser extension it works everywhere that it can detect WordPress, without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
+Remember, the browser extension works everywhere that it can detect WordPress, without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
 
 [Check out the Browser Extension and try it for free](https://turbo-admin.com/)
 

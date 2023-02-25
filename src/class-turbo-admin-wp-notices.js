@@ -58,9 +58,9 @@ export default class TurboAdminWpNotices {
             });
         }
 
-console.log('Notice Selectors', this.noticeSelectors);
+turboAdminLog('Notice Selectors', this.noticeSelectors);
         const notices = document.querySelectorAll(this.noticeSelectors.join(','));
-console.log('Notices', notices);
+turboAdminLog('Notices', notices);
 
         // Add buttons to notices that can be moved
         notices.forEach(notice => {
@@ -105,7 +105,7 @@ console.log('Notices', notices);
             return true;
         })
 
-        console.log('Notices to hide', noticesToHide)
+        turboAdminLog('Notices to hide', noticesToHide)
 
         /**
          * Build the notices wrapper
@@ -192,7 +192,7 @@ console.log('Notices', notices);
         const count = parseInt(countElem.innerText, 10);
         const notice = ev.target.closest(this.noticeSelectors.join(','));
         const noticeId = notice.id;
-        console.log(`Remembering ${noticeId}`);
+        turboAdminLog(`Remembering ${noticeId}`);
         panelInner.appendChild(notice);
         if (count === 0) {
             noticesLinkWrap.style.display = 'block';
@@ -209,7 +209,7 @@ console.log('Notices', notices);
         this.rememberedNoticeIds.push(noticeId);
 
         if ('object' === typeof(browser)) {
-            browser.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 'action': 'rememberNotice',
                 'noticeId': noticeId,
             });
@@ -225,7 +225,7 @@ console.log('Notices', notices);
         const count = parseInt(countElem.innerText, 10);
         const notice = ev.target.closest(this.noticeSelectors.join(','));
         const noticeId = notice.id;
-        console.log(`Forgetting ${noticeId}`);
+        turboAdminLog(`Forgetting ${noticeId}`);
 
         notice.remove();
 
@@ -252,7 +252,7 @@ console.log('Notices', notices);
         this.rememberedNoticeIds.push(noticeId);
 
         if ('object' === typeof(browser)) {
-            browser.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 'action': 'rememberNotice',
                 'noticeId': noticeId,
             });

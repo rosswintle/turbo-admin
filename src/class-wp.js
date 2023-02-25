@@ -166,12 +166,16 @@ export default class Wp {
             window.localStorage.setItem('ta-palette-data-siteurl', this.siteUrl);
             window.localStorage.setItem('ta-palette-data-home', this.home);
         } else if (! this.siteUrl || ! this.home) {
+            let urlsFound = false;
 
             // If we're not in the backend then (in the extension at least) we
             // could be on the front-end and not logged in, so check for an
             // admin bar and grab from that if there is one.
             if (document.getElementById('wpadminbar')) {
-                this.siteUrl = document.getElementById('wp-admin-bar-dashboard').querySelector('a').href;
+                const dashboardLink = document.getElementById('wp-admin-bar-dashboard')?.querySelector('a');
+                if (dashboardLink) {
+                    this.siteUrl = dashboardLink.href;
+                }
                 // Try for the API link
                 if (this.apiLinkUrl) {
                     if (this.apiLinkUrl.includes('/wp-json')) {
@@ -180,12 +184,16 @@ export default class Wp {
                     if (this.apiLinkUrl.includes('index.php?rest_route')) {
                         this.home = this.apiLinkUrl.replace(/index.php\?rest_route.*/, '');
                     }
+                    urlsFound = true;
                 } else {
-                    // We know what the siteUrl is, so guess the home from the siteUrl
-                    this.home = this.guessHomeFromSiteUrl(this.siteUrl);
+                    // We might know what the siteUrl is, so guess the home from the siteUrl
+                    if (this.siteUrl) {
+                        this.home = this.guessHomeFromSiteUrl(this.siteUrl);
+                        urlsFound = true;
+                    }
                 }
-
-            } else {
+            }
+            if (! urlsFound) {
                 // Try for the API link
                 // TODO: This needs to be async so it doesn't hold things up.
                 if (this.apiLinkUrl) {
@@ -201,12 +209,14 @@ export default class Wp {
                     } else {
                         this.siteUrl = this.guessSiteUrl();
                     }
-                } else {
-                    // We got nothing.
-                    this.home    = await this.guessHome();
-                    if (this.home) {
-                        this.siteUrl = await this.guessSiteUrlFromHome(this.home);
-                    }
+                    urlsFound = true;
+                }
+            }
+            if (! urlsFound) {
+                // We got nothing.
+                this.home    = await this.guessHome();
+                if (this.home) {
+                    this.siteUrl = await this.guessSiteUrlFromHome(this.home);
                 }
             }
         }
@@ -219,8 +229,8 @@ export default class Wp {
             this.home = this.home.replace(/(.+)\/$/, '$1');
         }
 
-        // console.log('siteUrl: ', this.siteUrl);
-        // console.log('home: ', this.home);
+        // turboAdminLog('siteUrl: ', this.siteUrl);
+        // turboAdminLog('home: ', this.home);
     }
 
 }
