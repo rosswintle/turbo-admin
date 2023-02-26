@@ -184,6 +184,21 @@ If you're reading this then you've probably already done step 1. So what are you
 
 == Changelog ==
 
+= 1.13.1 =
+* Version bump for publishing the Firefox extension
+
+= 1.13.0 =
+
+This version was skipped in the plugin.
+
+* [ENHANCEMENT] Some code rewrites because the extension now uses "Manifest v3" which is a new extension format. Hopefully nothing is broken but PLEASE report any issues.
+* [ENHANCEMENT] Speed improvements in some situations (cache post types collected from the API).
+* [ENHANCEMENT] Improvements to list-table keys (more list-table key nav improvements coming).
+* [ENHANCEMENT] Other behind-the-scenes improvements and preparations for other new features.
+* [ENHANCEMENT] Add debug mode and suppress most errors if it's turned off.
+* [FIX] Fix for WP 6.2 site editor interface (props Courtney Robertson)
+
+
 = 1.12.1 =
 * Version bump for publishing
 
