@@ -58,7 +58,7 @@ export default class ListTableShortcuts {
         // Move down
         if (this.currentRow === null) {
             this.currentRowIndex = 0;
-        } else {
+        } else if (this.currentRowIndex < this.tableRows.length - 1) {
             this.currentRowIndex++;
         }
         this.updateTable();
@@ -69,8 +69,9 @@ export default class ListTableShortcuts {
 
         if (this.currentRowIndex > 0) {
             this.currentRowIndex--;
-            this.updateTable();
         }
+
+        this.updateTable();
     }
 
     preTableChange() {
@@ -88,7 +89,7 @@ export default class ListTableShortcuts {
     }
 
     openTableRowItem() {
-        console.log(this);
+        turboAdminLog(this);
         /** @type {HTMLAnchorElement} */
         const link = this.currentRow.querySelector('a.row-title');
         if (link) {

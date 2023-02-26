@@ -7,8 +7,20 @@ import GravityFormsApi from './apis/class-gravity-forms-api.js';
 
 const taStorageKey = 'turbo-admin-settings';
 
+let debugMode = false;
+
+window.turboAdminLog = function() {
+    if (debugMode) {
+        console.log(...arguments);
+    }
+}
+
+window.turboAdminIsExtension = function() {
+    return 'undefined' !== typeof (chrome.storage);
+}
+
 // Use this to clear storage
-// browser.storage.local.remove(taStorageKey).then();
+// chrome.storage.local.remove(taStorageKey).then();
 
 // Note that in the extension, the globalThis is not the browser's global scope,
 // it is sandboxed. So we can't check across the plugin/extension boundary here.
@@ -28,7 +40,10 @@ async function taInit(settings) {
 
     globalThis.turboAdminOptions = settings[taStorageKey];
 
-    console.log('Preparing Turbo Admin');
+    // Set debug mode
+    debugMode = globalThis.turboAdminOptions['debug-mode'];
+
+    turboAdminLog('Preparing Turbo Admin');
 
     // Get Wp stuff ready
     globalThis.taWp = new Wp();
@@ -36,7 +51,7 @@ async function taInit(settings) {
     // Parts of this init are async.
     await globalThis.taWp.completeInit();
 
-    console.log('Turbo Admin: WP is initialised');
+    turboAdminLog('Turbo Admin: WP is initialised');
 
     // Get/set api settings
     globalThis.contentApi = new ContentApi();
@@ -45,7 +60,7 @@ async function taInit(settings) {
     globalThis.woocommerceApi = new WoocommerceApi();
     globalThis.gravityFormsApi = new GravityFormsApi();
 
-    console.log('Turbo Admin: Content API is initialised');
+    turboAdminLog('Turbo Admin: Content API is initialised');
 
     globalThis.turboAdmin = new TurboAdmin(globalThis.turboAdminOptions);
     await globalThis.turboAdmin.init();
@@ -78,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async e => {
         'rememberedNoticeIds': JSON.parse(window.localStorage.getItem('rememberedNoticeIds')) ?? new Array(),
         'barkeeper': globalThis.wpTurboAdmin['barkeeper'] === '1',
         'admin-bar-search': globalThis.wpTurboAdmin['adminBarSearch'] === '1',
+        'debug-mode': globalThis.wpTurboAdmin['debugMode'] === '1',
 	}
 	await taInit(globalThis.turboAdminOptions);
 });

@@ -45,9 +45,9 @@ export default class TurboAdminOxygenBuilder extends TurboAdminPlugin {
     /**
      * Get additional menu items to be added to the main menu
      *
-     * @return {ItemDefinition[]}
+     * @return {Promise<ItemDefinition[]>}
      */
-     getAdditionalItemDefinitions() {
+     async getAdditionalItemDefinitions() {
         const editDefinition = new ItemDefinition();
         editDefinition.detectType = 'dom';
         editDefinition.detectSelector = '#ct-edit-template-builder';

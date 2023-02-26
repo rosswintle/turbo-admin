@@ -63,7 +63,13 @@ export default class GravityFormsApi {
         const response = await fetch(`${gfApiBase}${path}/?${params}`);
 
         if (response.status < 200 || response.status >= 300) {
-            globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('Gravity Forms API Error. Try visiting the dashboard to refresh things.');
+            // TODO: Set a "deferred" notice to show when the palette is created?
+            if (globalThis.turboAdmin && globalThis.turboAdmin.turboAdminPalette) {
+                globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('Gravity Forms API Error. Try visiting the dashboard to refresh things.');
+            } else {
+                // Always log this as people may look
+                turboAdminLog('TURBO ADMIN: Gravity Forms API Error. Try visiting the WordPress Dashboard to refresh things.');
+            }
         }
 
         return response;

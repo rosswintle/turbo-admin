@@ -12,7 +12,7 @@ export default class TurboAdminContentSearch extends TurboAdminPlugin {
         for (let i = 0; i < postTypeKeys.length; i++) {
             const thisPostTypeKey = postTypeKeys[i];
             const thisPostType = globalThis.contentApi.postTypes[thisPostTypeKey];
-            // console.log('Adding search mode for post type', thisPostType);
+            // turboAdminLog('Adding search mode for post type', thisPostType);
             this.searchModes.push( this.makePostTypeSearchMode(thisPostType) );
         }
 

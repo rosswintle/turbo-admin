@@ -48,8 +48,8 @@ import TurboAdminMenuItem from './types/class-turbo-admin-menu-item.js';
 import SearchMode from './types/class-search-mode.js';
 import TurboAdminPlugin from './types/class-turbo-admin-plugin.js';
 import Acf from './plugins/class-acf.js';
-// import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-editor-fullscreen-kill.js';
-// import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
+import TurboAdminWpBlockEditorFullscreenKill from './class-turbo-admin-wp-block-editor-fullscreen-kill.js';
+import TurboAdminWpBlockEditorWelcomeGuideKill from './class-turbo-admin-wp-block-editor-welcome-guide-kill.js';
 import TurboAdminWpNotices from './class-turbo-admin-wp-notices.js';
 import TurboAdminListTableShortcuts from './class-list-table-shortcuts.js';
 import TurboAdminBarkeeper from './plugins/class-turbo-admin-barkeeper.js';
@@ -144,7 +144,7 @@ export default class TurboAdmin {
         }
 
         // Add other additional items
-        this.addAdditionalMenuItems();
+        await this.addAdditionalMenuItems();
         // Add items passed in using extraItemsRaw
         this.menu = this.menu.concat(this.options.extraItemsRaw ?? []);
 
@@ -188,14 +188,14 @@ export default class TurboAdmin {
             }
         })
 
-        // if (true === this.options['block-editor-fullscreen-disable']) {
-        //     // Initialise fullscreen kill
-        //     this.turboAdminFullscreenKill = new TurboAdminWpBlockEditorFullscreenKill();
-        // }
+        if (true === this.options['block-editor-fullscreen-disable']) {
+            // Initialise fullscreen kill
+            this.turboAdminFullscreenKill = new TurboAdminWpBlockEditorFullscreenKill();
+        }
 
-        // if (true === this.options['block-editor-welcome-screen-kill']) {
-        //     this.turboAdminWelcomeKill = new TurboAdminWpBlockEditorWelcomeGuideKill();
-        // }
+        if (true === this.options['block-editor-welcome-screen-kill']) {
+            this.turboAdminWelcomeKill = new TurboAdminWpBlockEditorWelcomeGuideKill();
+        }
 
         if (true === this.options['list-table-keyboard-shortcuts']) {
             this.turboAdminListTableShortcuts = new TurboAdminListTableShortcuts();
@@ -260,7 +260,7 @@ export default class TurboAdmin {
      * Adds additional menu items passed in by configuration to the
      * menu items list.
      */
-    addAdditionalMenuItems() {
+    async addAdditionalMenuItems() {
 
         /*
          * I'd LOVE for this to be config driven
@@ -290,7 +290,7 @@ export default class TurboAdmin {
         const pluginKeys = Object.keys(this.plugins);
 
         for (let i=0; i < pluginKeys.length; i++) {
-            extraItems = extraItems.concat(this.plugins[pluginKeys[i]].getAdditionalItemDefinitions());
+            extraItems = extraItems.concat(await this.plugins[pluginKeys[i]].getAdditionalItemDefinitions());
         }
 
         // Merge in defaults
@@ -380,6 +380,8 @@ export default class TurboAdmin {
             let elements = null;
             if (item.detectType === 'url') {
                 detected = Boolean(window.location.href.includes(item.detectPattern));
+                // Just grab any old element. We shouldn't need it.
+                elements = document.querySelectorAll('body');
             } else if (item.detectType === 'dom') {
                 if (item.detectSelector) {
                     elements = document.querySelectorAll(item.detectSelector);
@@ -493,7 +495,7 @@ export default class TurboAdmin {
      * @param {TurboAdminPlugin} plugin
      */
     registerPlugin(plugin) {
-        console.log('Registering plugin ' + plugin.name);
+        turboAdminLog('Registering plugin ' + plugin.name);
         this.plugins[plugin.name] = plugin;
     }
 
@@ -505,7 +507,7 @@ export default class TurboAdmin {
      * @param {SearchMode} searchMode
      */
     registerSearchMode(searchMode) {
-        console.log('Registering search mode with keyword ' + searchMode.keyword);
+        turboAdminLog('Registering search mode with keyword ' + searchMode.keyword);
         // Don't use `this` as we are bound!
         globalThis.turboAdmin.searchModes[searchMode.keyword] = searchMode;
     }
@@ -531,7 +533,7 @@ export default class TurboAdmin {
         if ( shortcut.shift ) {
             keysString += 'Shift-';
         }
-        keysString += shortcut.key;
+        keysString += shortcut.key.toUpperCase();
         return keysString;
     }
 

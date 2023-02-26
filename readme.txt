@@ -3,9 +3,9 @@ Contributors: magicroundabout
 Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
 Requires at least: 4.9
-Tested up to: 6.1
-Requires PHP: 7.2
-Stable tag: 1.12.1
+Tested up to: 6.2
+Requires PHP: 7.4
+Stable tag: 1.13.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -41,7 +41,7 @@ PLUS the browser extension has features not present in the plugin. Some features
 * Block editor welcome guide remover
 * Live/dev site labels
 
-Remember, the browser extension it works everywhere that it can detect WordPress, without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
+Remember, the browser extension works everywhere that it can detect WordPress, without needing a plugin. And it carries your preferences with you! It's WordPress, your way!
 
 [Check out the Browser Extension and try it for free](https://turbo-admin.com/)
 
@@ -183,6 +183,31 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.13.2 =
+
+* [ENHANCEMENT] Storage abstraction enhancements
+* [ENHANCEMENT] Improved notice handling (again!)
+* [FIX] Save Barkeeper state properly
+* [FIX] Content API now uses the storage abstraction to work on both plugin and extension.
+
+= 1.13.1 =
+
+This version was skipped in the plugin.
+
+* Version bump for publishing the Firefox extension
+
+= 1.13.0 =
+
+This version was skipped in the plugin.
+
+* [ENHANCEMENT] Some code rewrites because the extension now uses "Manifest v3" which is a new extension format. Hopefully nothing is broken but PLEASE report any issues.
+* [ENHANCEMENT] Speed improvements in some situations (cache post types collected from the API).
+* [ENHANCEMENT] Improvements to list-table keys (more list-table key nav improvements coming).
+* [ENHANCEMENT] Other behind-the-scenes improvements and preparations for other new features.
+* [ENHANCEMENT] Add debug mode and suppress most errors if it's turned off.
+* [FIX] Fix for WP 6.2 site editor interface (props Courtney Robertson)
+
 
 = 1.12.1 =
 * Version bump for publishing

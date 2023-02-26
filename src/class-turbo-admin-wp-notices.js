@@ -32,11 +32,13 @@ export default class TurboAdminWpNotices {
          * These selectors are allowed (unless explicitly denied)
          */
         this.allowedClasses = [
-            'notice-success',
-            'notice-error',
-            'notice-failure',
-            'updated',
+            '.notice-success',
+            '.notice-error',
+            '.notice-failure',
+            '.updated',
         ]
+
+        this.noticesPanelInner = null;
 
         if (rememberedNoticeIds) {
             this.rememberedNoticeIds = rememberedNoticeIds.length > 0 ? rememberedNoticeIds : [];
@@ -58,54 +60,19 @@ export default class TurboAdminWpNotices {
             });
         }
 
-console.log('Notice Selectors', this.noticeSelectors);
+turboAdminLog('Notice Selectors', this.noticeSelectors);
         const notices = document.querySelectorAll(this.noticeSelectors.join(','));
-console.log('Notices', notices);
+turboAdminLog('Notices', notices);
 
         // Add buttons to notices that can be moved
         notices.forEach(notice => {
-            this.maybeAddIdToNotice(notice)
-
-            if (this.keepNotice(notice)) {
-                const rememberButton = document.createElement('button');
-                rememberButton.classList.add('ta-remember-notice-button');
-                rememberButton.innerText = 'Move to panel';
-
-                const forgetButton = document.createElement('button');
-                forgetButton.classList.add('ta-forget-notice-button');
-                forgetButton.innerText = 'Move to dashboard';
-
-                notice.classList.add('ta-added-pos-relative');
-
-                notice.appendChild(rememberButton);
-                notice.appendChild(forgetButton);
-
-                rememberButton.addEventListener('click', this.rememberNotice.bind(this), false, true);
-                forgetButton.addEventListener('click', this.forgetNotice.bind(this), false, true);
-            }
+            this.maybeAddIdToNotice(notice);
+            this.maybeAddMoveButtonToNotice.call(this, notice);
         });
 
-        const noticesToHide = Array.from(notices).filter(notice => {
-            if (this.rememberedNoticeIds.includes(notice.id)) {
-                return true;
-            }
+        const noticesToHide = Array.from(notices).filter( this.noticeShouldBeHidden.bind(this) );
 
-            if (this.keepNotice(notice)) {
-                return false;
-            }
-
-            // Invisible
-            if (
-                notice.offsetHeight === 0 ||
-                notice.offsetWidth === 0
-            ) {
-                return false;
-            }
-
-            return true;
-        })
-
-        console.log('Notices to hide', noticesToHide)
+        turboAdminLog('Notices to hide', noticesToHide)
 
         /**
          * Build the notices wrapper
@@ -156,18 +123,15 @@ console.log('Notices', notices);
         noticesPanel.style.display='none';
         noticesPanel.dataset.open='no';
 
-        const noticesPanelInner = document.createElement('div');
-        noticesPanelInner.id = 'ta-notices-panel-inner';
+        this.noticesPanelInner = document.createElement('div');
+        this.noticesPanelInner.id = 'ta-notices-panel-inner';
 
-        noticesToHide.forEach(notice => {
-            // See Toolbelt's implementation: https://github.com/BinaryMoon/wp-toolbelt/blob/dev/modules/tidy-notifications/src/js/script.js
-            noticesPanelInner.append(notice);
-        });
+        noticesToHide.forEach(this.hideNotice.bind(this));
 
         /**
          * Add wrap to the meta area
          */
-        noticesPanel.appendChild(noticesPanelInner);
+        noticesPanel.appendChild(this.noticesPanelInner);
         const screenMeta = document.getElementById('screen-meta');
         screenMeta.appendChild(noticesPanel);
 
@@ -175,13 +139,37 @@ console.log('Notices', notices);
         // if (window.screenMeta) {
         //     window.screenMeta.init();
         // }
+
+        // Add a mutation observer to check for notices added by JavaScript
+        // this.addObserver();
+    }
+
+    addObserver() {
+        const observer = new MutationObserver( this.handleMutations.bind(this) );
+        observer.observe(document.getElementById('wpbody-content'), {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    handleMutations(mutations, observer) {
+        mutations.forEach( mutation => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach( node => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        console.log('MUTATING!!!' + node.id);
+                        // this.maybeAddIdToNotice(node);
+                        // this.maybeAddMoveButtonToNotice(node);
+                        // this.maybeHideNotice(node);
+                    }
+                });
+            }
+        });
     }
 
     // Does the allowedClasses list say that this notice should be shown?
     keepNotice(noticeElem) {
-        return this.allowedClasses.reduce( (found, current) => {
-            return found || noticeElem.classList.contains(current)
-        }, false);
+        return noticeElem.matches(this.allowedClasses.join(', '));
     }
 
     rememberNotice(ev) {
@@ -192,7 +180,7 @@ console.log('Notices', notices);
         const count = parseInt(countElem.innerText, 10);
         const notice = ev.target.closest(this.noticeSelectors.join(','));
         const noticeId = notice.id;
-        console.log(`Remembering ${noticeId}`);
+        turboAdminLog(`Remembering ${noticeId}`);
         panelInner.appendChild(notice);
         if (count === 0) {
             noticesLinkWrap.style.display = 'block';
@@ -205,11 +193,31 @@ console.log('Notices', notices);
         this.saveRememberedNotice(noticeId);
     }
 
+    noticeShouldBeHidden(notice) {
+        if (this.rememberedNoticeIds.includes(notice.id)) {
+            return true;
+        }
+
+        if (this.keepNotice(notice)) {
+            return false;
+        }
+
+        // Invisible
+        if (
+            notice.offsetHeight === 0 ||
+            notice.offsetWidth === 0
+        ) {
+            return false;
+        }
+
+        return true;
+    }
+
     saveRememberedNotice(noticeId) {
         this.rememberedNoticeIds.push(noticeId);
 
         if ('object' === typeof(browser)) {
-            browser.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 'action': 'rememberNotice',
                 'noticeId': noticeId,
             });
@@ -225,7 +233,7 @@ console.log('Notices', notices);
         const count = parseInt(countElem.innerText, 10);
         const notice = ev.target.closest(this.noticeSelectors.join(','));
         const noticeId = notice.id;
-        console.log(`Forgetting ${noticeId}`);
+        turboAdminLog(`Forgetting ${noticeId}`);
 
         notice.remove();
 
@@ -252,7 +260,7 @@ console.log('Notices', notices);
         this.rememberedNoticeIds.push(noticeId);
 
         if ('object' === typeof(browser)) {
-            browser.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 'action': 'rememberNotice',
                 'noticeId': noticeId,
             });
@@ -265,13 +273,51 @@ console.log('Notices', notices);
     /*
      * For notices without IDs we'll see if we can add an ID that's a hash of their classlist
      */
-    maybeAddIdToNotice(notice) {
-        if (notice.id && notice.id !== '' && notice.id !=='message') {
+    maybeAddIdToNotice(noticeElem) {
+        if (noticeElem.id && noticeElem.id !== '' && noticeElem.id !=='message') {
             return;
         }
 
-        const classes = notice.classList;
-        notice.id = Array.from(notice.classList).join('-');
+        const classes = noticeElem.classList;
+        noticeElem.id = Array.from(noticeElem.classList).join('-');
+    }
+
+    /**
+     * Add buttons to notices that we want to be able to move to the panel
+     */
+    maybeAddMoveButtonToNotice(noticeElem) {
+        if (this.keepNotice(noticeElem)) {
+            const rememberButton = document.createElement('button');
+            rememberButton.classList.add('ta-remember-notice-button');
+            rememberButton.innerText = 'Move to panel';
+
+            const forgetButton = document.createElement('button');
+            forgetButton.classList.add('ta-forget-notice-button');
+            forgetButton.innerText = 'Move to dashboard';
+
+            noticeElem.classList.add('ta-added-pos-relative');
+
+            noticeElem.appendChild(rememberButton);
+            noticeElem.appendChild(forgetButton);
+
+            rememberButton.addEventListener('click', this.rememberNotice.bind(this), false, true);
+            forgetButton.addEventListener('click', this.forgetNotice.bind(this), false, true);
+        }
+    }
+
+    maybeHideNotice(noticeElem) {
+        if (this.noticeShouldBeHidden(noticeElem) && !noticeElem.classList.contains('ta-notice-hidden')) {
+            this.hideNotice(noticeElem);
+        }
+    }
+
+    hideNotice(noticeElem) {
+        noticeElem.classList.add('ta-notice-hidden');
+        // WPCore's common.js will re-add the notice below the dashboard header unless it has a .inline class.
+        // It does: $( 'div.updated, div.error, div.notice' ).not( '.inline, .below-h2' ).insertAfter( $headerEnd );
+        noticeElem.classList.add('inline');
+        // See Toolbelt's implementation: https://github.com/BinaryMoon/wp-toolbelt/blob/dev/modules/tidy-notifications/src/js/script.js
+        this.noticesPanelInner.append(noticeElem);
     }
 
     /**

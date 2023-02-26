@@ -20,11 +20,18 @@ export default class Storage {
         /** @type {null|storageStorageArea|WindowLocalStorage} */
         this.store = null;
 
-        if ('undefined' === typeof (browser)) {
-            this.store = window.localStorage;
+        if (this.inExtension()) {
+            this.store = chrome.storage.local;
         } else {
-            this.store = browser.storage.local;
+            this.store = window.localStorage;
         }
+    }
+
+    /**
+     * Returns true if we are in the extension.
+     */
+    inExtension() {
+        return window.turboAdminIsExtension();
     }
 
     /**
@@ -34,11 +41,11 @@ export default class Storage {
      * @param {Object} dataObject
      */
     async set(dataObject) {
-        if ('undefined' === typeof (browser)) {
+        if (this.inExtension()) {
+            await this.store.set(dataObject);
+        } else {
             const keys = Object.keys(dataObject);
             keys.forEach(key => this.store.setItem(key, JSON.stringify(dataObject[key])));
-        } else {
-            await this.store.set(dataObject);
         }
     }
 
@@ -52,7 +59,9 @@ export default class Storage {
      * @returns {Promise<Object>}
      */
     async get(key) {
-        if ('undefined' === typeof (browser)) {
+        if (this.inExtension()) {
+            return await this.store.get(key);
+        } else {
             let returnObj = {};
             let item = this.store.getItem(key);
             if (! item) {
@@ -66,9 +75,6 @@ export default class Storage {
             }
             returnObj[key] = itemObject;
             return returnObj;
-        } else {
-            return await this.store.get(key);
         }
     }
-
 }

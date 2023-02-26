@@ -4,7 +4,7 @@ export default class ContentApi {
 
     constructor() {
         // this.discoverApiRoot().then(e => null);
-        // console.log('Discovered API base: ', this.apiBase);
+        // turboAdminLog('Discovered API base: ', this.apiBase);
         this.active = false;
         this.store = new Storage();
         this.postTypes = [];
@@ -15,7 +15,7 @@ export default class ContentApi {
     }
 
     async discoverApiRoot() {
-        console.log('Discovering API root');
+        turboAdminLog('Discovering API root');
         let wpApiSettings = null;
         this.storageKey = 'wpApiSettings.' + globalThis.taWp.home;
 
@@ -63,21 +63,41 @@ export default class ContentApi {
             return;
         }
         // This should be very rare. I should only really see it in development.
-        console.log('API Route Discovery failed');
+        turboAdminLog('API Route Discovery failed');
+        // Making best guess
+        this.apiBase = globalThis.taWp.home + '/wp-json/wp/v2/';
         // TODO: This can't display as the palette isn't created yet.
         // globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('Can\'t find the WP API. Try visiting the dashboard to refresh things.');
     }
 
     async discoverPostTypes() {
-        console.log('Discovering post types');
+        turboAdminLog('Discovering post types');
         if (! this.active) {
-            console.log('Not active');
+            turboAdminLog('Not active');
             this.postTypes = [];
             return;
         }
 
+        const postTypes = await this.store.get('ta-post-types');
+
+        // Check local storage cache
+        if (postTypes && postTypes['ta-post-types'] && postTypes['ta-post-types']['expiry'] > Date.now()) {
+            turboAdminLog('Using cached post types: ', postTypes['ta-post-types']['data']);
+            this.postTypes = postTypes['ta-post-types']['data'];
+            return;
+        }
+
         this.postTypes = await this.getPostTypes();
-        console.log('Discovered post types: ', this.postTypes);
+        turboAdminLog('Discovered post types: ', this.postTypes);
+
+        // Cache for 10 minutes
+        const expiry = Date.now() + (10 * 60 * 1000);
+        this.store.set({
+            'ta-post-types': {
+                expiry: expiry,
+                data: this.postTypes
+            }
+        });
     }
 
     userLoggedIn() {
@@ -265,7 +285,13 @@ export default class ContentApi {
         const response = await fetch(`${this.apiBase}${path}/?${params}`, init);
 
         if (response.status < 200 || response.status >= 300) {
-            globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('WordPress API Error. Try visiting the dashboard to refresh things.');
+            // TODO: Set a "deferred" notice to show when the palette is created?
+            if (globalThis.turboAdmin && globalThis.turboAdmin.turboAdminPalette) {
+                globalThis.turboAdmin.turboAdminPalette.showPaletteNotice('WordPress API Error. Try visiting the dashboard to refresh things.');
+            } else {
+                // Always log this as people may look
+                turboAdminLog( 'TURBO ADMIN: WordPress API Error. Try visiting the WordPress Dashboard to refresh things.' );
+            }
         }
 
         return response;
