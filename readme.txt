@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 4.9
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 1.13.1
+Stable tag: 1.13.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -184,7 +184,17 @@ If you're reading this then you've probably already done step 1. So what are you
 
 == Changelog ==
 
+= 1.13.2 =
+
+* [ENHANCEMENT] Storage abstraction enhancements
+* [ENHANCEMENT] Improved notice handling (again!)
+* [FIX] Save Barkeeper state properly
+* [FIX] Content API now uses the storage abstraction to work on both plugin and extension.
+
 = 1.13.1 =
+
+This version was skipped in the plugin.
+
 * Version bump for publishing the Firefox extension
 
 = 1.13.0 =
