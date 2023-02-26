@@ -56,8 +56,8 @@ import TurboAdminBarkeeper from './plugins/class-turbo-admin-barkeeper.js';
 import TurboAdminContentSearch from './plugins/class-turbo-admin-content-search.js';
 import TurboAdminPluginSearch from './plugins/class-turbo-admin-plugins.js';
 import TurboAdminUserSearch from './plugins/class-turbo-admin-users.js';
-import TurboAdminWoocommerce from './plugins/class-turbo-admin-woocommerce.js';
-import TurboAdminGravityForms from './plugins/class-turbo-admin-gravity-forms.js';
+// import TurboAdminWoocommerce from './plugins/class-turbo-admin-woocommerce.js';
+// import TurboAdminGravityForms from './plugins/class-turbo-admin-gravity-forms.js';
 import TurboAdminMUSites from './plugins/class-turbo-admin-mu-sites.js';
 import TurboAdminOxygenBuilder from './plugins/class-turbo-admin-oxygen-buillder.js';
 
@@ -102,8 +102,8 @@ export default class TurboAdmin {
         new TurboAdminContentSearch();
         new TurboAdminPluginSearch();
         new TurboAdminUserSearch();
-        new TurboAdminWoocommerce();
-        new TurboAdminGravityForms();
+        // new TurboAdminWoocommerce();
+        // new TurboAdminGravityForms();
         new TurboAdminMUSites();
         new TurboAdminOxygenBuilder();
 
