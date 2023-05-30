@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 4.9
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 1.13.2
+Stable tag: 1.13.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,11 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.13.3 =
+
+* [ENHANCEMENT] Add search modes to the command palette - I'm not sure if I like this or not
+* [FIX] Bug that prevented Turbo Admin starting up in Firefox. Sorry about that! Props @saschinger and @mrwweb for reporting.
 
 = 1.13.2 =
 
