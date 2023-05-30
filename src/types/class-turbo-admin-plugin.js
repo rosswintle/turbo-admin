@@ -54,11 +54,44 @@ export default class TurboAdminPlugin {
     }
 
     /**
+     * Get the item definitions for search modes.
+     *
+     * Note that , at time of writing, this runs AFTER API init but before the plugin is activated.
+     * So APIs are available (and may be used in shouldActivate()) but the plugin is not yet activated.
+     *
+     * @return {Promise<ItemDefinition[]>}
+     */
+    async getSearchModeItemDefinitions() {
+        if (!this.shouldActivate()) {
+            return [];
+        }
+
+        const searchModeItems = this.searchModes.map(searchMode => {
+            // Return null if we don't want to show this search mode in the palette.
+            if (searchMode.showInPaletteSearch === false) {
+                return null;
+            }
+            const item = new ItemDefinition();
+            item.detectType = 'none';
+            item.itemTitleFunction = () => `<span style="font-style:italic;">Search</span>: ${searchMode.displayName}`;
+            item.itemActionType = 'search-mode';
+            item.itemActionInfoFunction = () => { return { searchMode: searchMode.keyword } };
+            return item;
+        })
+        // Filter out the nulls.
+        return searchModeItems.filter( item => item !== null);
+    }
+
+    /**
      * Get additional menu items to be added to the main menu
      *
      * @return {Promise<ItemDefinition[]>}
      */
     async getAdditionalItemDefinitions() {
+        if (!this.activated) {
+            return [];
+        }
+
         return [];
     }
 

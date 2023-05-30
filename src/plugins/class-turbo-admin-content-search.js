@@ -7,10 +7,22 @@ export default class TurboAdminContentSearch extends TurboAdminPlugin {
     constructor() {
         super('WP Content');
 
-        // Register a search mode for each post type
+        const ignoredPostTypes = [
+            'nav_menu_item',
+            'wp_block',
+            'wp_template',
+            'wp_template_part',
+            'wp_navigation',
+        ];
+
         const postTypeKeys = Object.keys(globalThis.contentApi.postTypes);
-        for (let i = 0; i < postTypeKeys.length; i++) {
-            const thisPostTypeKey = postTypeKeys[i];
+
+        // Discard ignored post types
+        const filteredPostTypeKeys = postTypeKeys.filter(key => ! ignoredPostTypes.includes(key));
+
+        // Register a search mode for each post type
+        for (let i = 0; i < filteredPostTypeKeys.length; i++) {
+            const thisPostTypeKey = filteredPostTypeKeys[i];
             const thisPostType = globalThis.contentApi.postTypes[thisPostTypeKey];
             // turboAdminLog('Adding search mode for post type', thisPostType);
             this.searchModes.push( this.makePostTypeSearchMode(thisPostType) );
@@ -21,7 +33,8 @@ export default class TurboAdminContentSearch extends TurboAdminPlugin {
 
         // Register search all post types mode
         this.searchModes.push( new SearchMode('search', 'All post types', this.contentSearch.bind(this)) );
-        this.searchModes.push( new SearchMode('find', 'All post types', this.contentSearch.bind(this)) );
+        // Don't show this one in the palette
+        this.searchModes.push( new SearchMode('find', 'All post types', this.contentSearch.bind(this), null, false) );
     }
 
     /**

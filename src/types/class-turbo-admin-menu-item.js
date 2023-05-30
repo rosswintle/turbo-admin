@@ -1,3 +1,5 @@
+import ItemDefinition from "./class-item-definition";
+
 /**
  * Menu items are the items ready to appear in the palette.
  *
@@ -13,9 +15,17 @@ export default class TurboAdminMenuItem {
     title = '';
 
     /**
-     * The action of the item is the URL to visit when the item is clicked
+     * The type of action to take when the item is clicked. Can be:
+     * - 'url' to visit a URL (default)
+     * - 'search-mode' to enter a search mode
+     */
+    actionType = 'url';
+
+    /**
+     * The action of the item is the URL to visit when the item is clicked or the action data
+     * if the action type is not 'url'
      *
-     * @type {string}
+     * @type {string|Object}
      */
     action = '';
 
@@ -36,13 +46,51 @@ export default class TurboAdminMenuItem {
      */
     noCache = false;
 
+    /**
+     * Creates a new simple menu item (only works for URLs - for more complex items use fromItemDefinition)
+     *
+     * @param {string} title
+     * @param {string} action
+     * @param {string} parentTitle
+     * @param {boolean} noCache
+     */
 	constructor(title, action, parentTitle, noCache = false) {
 		this.title = title;
+        this.actionType = 'url';
 		this.action = action;
 		this.parentTitle = parentTitle;
         this.noCache = noCache;
 	}
 
+    /**
+     * Construct a new menu item from an ItemDefinition
+     *
+     * @param {ItemDefinition} item
+     * @param {HTMLElement} element
+     * @param {string} parentTitle
+     * @return {TurboAdminMenuItem}
+     */
+    static fromItemDefinition(item, element = null, parentTitle = '') {
+        const action = item.itemActionType === 'url' ?
+            item.itemUrlFunction(element) :
+            item.itemActionInfoFunction(element);
+
+        const menuItem = new TurboAdminMenuItem(
+            item.itemTitleFunction(element),
+            action,
+            parentTitle,
+            item?.noCache
+        );
+        menuItem.actionType = item.itemActionType;
+        return menuItem;
+    }
+
+    /**
+     * Compares this item to another item
+     *
+     * @param {TurboAdminMenuItem} item
+     * @returns {boolean}
+     */
     sameAs(item) {
         return item.title === this.title &&
             item.action === this.action &&

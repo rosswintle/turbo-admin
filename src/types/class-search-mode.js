@@ -38,17 +38,27 @@ export default class SearchMode {
     defaultItemsCallback = null;
 
     /**
+     * Set this to false to hide the search mode from the palette - it still
+     * works with a keyword, but won't show in the palette's list of items
+     *
+     * @type {boolean}
+     */
+    showInPaletteSearch = true;
+
+    /**
      * Constructs a new search mode
      *
      * @param {string} keyword
      * @param {string} displayName
      * @param {SearchCallback} searchCallback
      * @param {SearchCallback} defaultItemsCallback
+     * @param {boolean} showInPaletteSearch
      */
-    constructor(keyword, displayName, searchCallback, defaultItemsCallback = null) {
+    constructor(keyword, displayName, searchCallback, defaultItemsCallback = null, showInPaletteSearch = true) {
         this.keyword = keyword;
         this.displayName = displayName;
         this.searchCallback = searchCallback;
         this.defaultItemsCallback = defaultItemsCallback;
+        this.showInPaletteSearch = showInPaletteSearch;
     }
 }

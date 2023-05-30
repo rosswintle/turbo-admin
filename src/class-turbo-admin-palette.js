@@ -74,6 +74,7 @@ export default class TurboAdminPalette {
 		this.paletteDataBackup = null;
 		this.paletteItemsBackup = null;
         this.paletteItemIndexBackup = null;
+        this.paletteInputValueBackup = null;
 
         // Current search modes/keyword
         this.searchMode = null;
@@ -109,6 +110,20 @@ export default class TurboAdminPalette {
 
 		this.paletteFuseOptions = {
 			keys: ['innerText'],
+            shouldSort: true,
+            // sortFn: (a, b) => {
+            //     // Return search items first
+            //     if (a.item[0].v.startsWith('Search: ')) {
+            //         if (b.item[0].v.startsWith('Search: ')) {
+            //             return b.score - a.score;
+            //         }
+            //         return -1;
+            //     }
+            //     if (b.item[0].v.startsWith('Search: ')) {
+            //         return 1;
+            //     }
+            //     return a.score - b.score;
+            // }
 		}
 
 		this.paletteFuse = new Fuse(this.paletteItems, this.paletteFuseOptions);
@@ -154,13 +169,20 @@ export default class TurboAdminPalette {
 		this.paletteData.forEach(item => {
 			const li = document.createElement('li');
 			const a = document.createElement('a');
-			li.appendChild(a);
-			a.href = item.action;
-			let title = item.title;
-			if (item.parentTitle) {
-				title = item.parentTitle + ": " + title;
-			}
-			a.innerHTML = title;
+            li.appendChild(a);
+            if (item.actionType === 'url') {
+                a.href = item.action;
+                let title = item.title;
+                if (item.parentTitle) {
+                    title = item.parentTitle + ": " + title;
+                }
+                a.innerHTML = title;
+            } else if (item.actionType === 'search-mode') {
+                a.href = '#';
+                a.innerHTML = item.title;
+                li.dataset.actionType = item.actionType;
+                li.dataset.searchMode = item.action.searchMode;
+            }
             this.addPaletteListItem(li);
 		});
 	}
@@ -473,7 +495,6 @@ export default class TurboAdminPalette {
             if (this.isKeyword(inputValue)) {
                 turboAdminLog('Found search mode ' + inputValue)
                 e.preventDefault();
-                // TODO: Work on this.
                 await this.enterSearchMode(
                     globalThis.turboAdmin.searchModes[inputValue]);
                 return;
@@ -524,6 +545,21 @@ export default class TurboAdminPalette {
     }
 
     /**
+     * Puts the palette into a specific search mode specified by a keyword
+     *
+     * @param {string} keyword
+     */
+    async enterSearchModeByKeyword(keyword) {
+        turboAdminLog('Entering search mode by keyword ' + keyword);
+        const searchMode = globalThis.turboAdmin.searchModes[keyword];
+        turboAdminLog('Search mode is ' + searchMode);
+        if (searchMode === undefined) {
+            return;
+        }
+        await this.enterSearchMode(searchMode);
+    }
+
+    /**
      * Leaves the current search mode
      */
     leaveSearchMode() {
@@ -532,28 +568,29 @@ export default class TurboAdminPalette {
         this.searchMode = null;
         this.removeSearchModeTag();
         this.restorePaletteData();
-        this.paletteInputElement.value = searchMode.keyword;
-        this.maybeHighlightInputKeyword('');
-        this.paletteSearchAndUpdate();
     }
 
     /**
-     * Backups up the palette data to a local variable so that it can be
+     * Backups up the palette data and input value to local variables so that it can be
      * restored later.
      */
     backupPaletteData() {
         this.paletteDataBackup = this.paletteData;
         this.paletteItemsBackup = this.paletteItems;
         this.paletteItemIndexBackup = this.itemIndex;
+        this.paletteInputValueBackup = this.paletteInputElement.value;
     }
 
     /**
-     * Restores the save palette data - does not rebuild anything
+     * Restores the save palette data - highlights and rebuilds
      */
     restorePaletteData() {
         this.paletteData = this.paletteDataBackup;
         this.paletteItems = this.paletteItemsBackup;
         this.itemIndex = this.paletteItemIndexBackup;
+        this.paletteInputElement.value = this.paletteInputValueBackup;
+        this.maybeHighlightInputKeyword('');
+        this.paletteSearchAndUpdate();
     }
 
     /**
@@ -742,6 +779,10 @@ export default class TurboAdminPalette {
         if (this.selectedItem.classList.contains('ta-has-child-menu')) {
             const subMenu = this.selectedItem.querySelector('.ta-submenu');
             this.openSubMenu(subMenu);
+            return;
+        }
+        if (this.selectedItem.dataset.actionType === 'search-mode') {
+            this.enterSearchModeByKeyword(this.selectedItem.dataset.searchMode);
             return;
         }
 

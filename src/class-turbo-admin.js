@@ -131,7 +131,7 @@ export default class TurboAdmin {
                     } else {
                         this.menu = JSON.parse(savedMenu);
                         // Check if there is no "Media" item  - this should ONLY be in the back-end
-                        if (! this.menu.some(item => item.action.endsWith('upload.php'))) {
+                        if (! this.menu.some(item => ( ( typeof(item.action) === 'string' ) && ( item.action.endsWith('upload.php') ) ))) {
                             this.menuNeedsRefresh = true;
                         }
                         // Merge (?) the items?
@@ -290,33 +290,39 @@ export default class TurboAdmin {
         const pluginKeys = Object.keys(this.plugins);
 
         for (let i=0; i < pluginKeys.length; i++) {
+            extraItems = extraItems.concat(await this.plugins[pluginKeys[i]].getSearchModeItemDefinitions());
             extraItems = extraItems.concat(await this.plugins[pluginKeys[i]].getAdditionalItemDefinitions());
         }
 
         // Merge in defaults
         extraItems = extraItems.concat(
             [
+                // TODO: Convert to ItemDefinition objects
                 {
                     'detectType': 'dom',
                     'detectSelector': 'body.wp-admin #wp-admin-bar-view-site a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': () => 'View/visit site',
                     'itemUrlFunction': (element) => element.href
                 },
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-dashboard a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': (element) => element.textContent,
                     'itemUrlFunction': (element) => element.href
                 },
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wpadminbar',
+                    'itemActionType': 'url',
                     'itemTitleFunction': () => 'Logout',
                     'itemUrlFunction': () => document.getElementById('wp-admin-bar-logout')?.querySelector('a')?.href
                 },
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-edit a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': (item) => item.textContent,
                     'itemUrlFunction': (item) => item.href,
                     'noCache': true,
@@ -324,6 +330,7 @@ export default class TurboAdmin {
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-view a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': (item) => item.textContent,
                     'itemUrlFunction': (item) => item.href,
                     'noCache': true,
@@ -331,18 +338,21 @@ export default class TurboAdmin {
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-new-content .ab-submenu a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': (item) => 'New ' + item.textContent,
                     'itemUrlFunction': (item) => item.href
                 },
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-customize a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': (item) => item.textContent,
                     'itemUrlFunction': (item) => item.href
                 },
                 {
                     'detectType': 'dom',
                     'detectSelectorNone': '#wpadminbar, #loginform',
+                    'itemActionType': 'url',
                     'itemTitleFunction': () => "Log in",
                     'itemUrlFunction': () => {
                         if (globalThis.taWp.home) {
@@ -356,6 +366,7 @@ export default class TurboAdmin {
                 {
                     'detectType': 'dom',
                     'detectSelector': '#backtoblog a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': () => "View/visit site",
                     'itemUrlFunction': (element) => element.href
                 },
@@ -363,12 +374,14 @@ export default class TurboAdmin {
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin > a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': () => "Network Admin",
                     'itemUrlFunction': (element) => element.href
                 },
                 {
                     'detectType': 'dom',
                     'detectSelector': '#wp-admin-bar-my-sites #wp-admin-bar-network-admin .ab-submenu a',
+                    'itemActionType': 'url',
                     'itemTitleFunction': (element) => 'Network Admin: ' + element.textContent,
                     'itemUrlFunction': (element) => element.href
                 },
@@ -378,7 +391,11 @@ export default class TurboAdmin {
         extraItems.forEach(item => {
             let detected = false;
             let elements = null;
-            if (item.detectType === 'url') {
+            if (item.detectType === 'none') {
+                detected = true;
+                // Just grab any old element. We shouldn't need it.
+                elements = document.querySelectorAll('body');
+            } else if (item.detectType === 'url') {
                 detected = Boolean(window.location.href.includes(item.detectPattern));
                 // Just grab any old element. We shouldn't need it.
                 elements = document.querySelectorAll('body');
@@ -398,7 +415,7 @@ export default class TurboAdmin {
             }
 
             elements.forEach(element => {
-                const newItem = new TurboAdminMenuItem(item.itemTitleFunction(element), item.itemUrlFunction(element), '', item?.noCache);
+                const newItem = TurboAdminMenuItem.fromItemDefinition(item, element, '');
                 // Might already have one so check.
                 if (this.menu.some(menuItem => {
                     // This must be newItem.sameAs, not menuItem.sameAs because the menuItem
