@@ -15,9 +15,17 @@ export default class ItemDefinition {
     */
 
     /**
+     * This callback is displayed as part of the Requester class.
+    * @callback menuActionInfoCallback
+    * @param {HTMLElement} element
+    * @returns {Object}
+    */
+
+    /**
      * The method of detecting items. Can be:
      *  - 'dom' for checking if a DOM element exists (requires detectSelector or detectSelectorNone)
      *  - 'url' if the current URL is being checked (requires detectPattern)
+     *  - 'none' if no detection is required - this item will always be added
      *
      * @type {string}
      */
@@ -53,12 +61,30 @@ export default class ItemDefinition {
      itemTitleFunction = null;
 
     /**
+     * The type of action to take when the item is clicked. Can be:
+     * - 'url' to visit a URL (default)
+     * - 'search-mode' to enter a search mode
+     *
+     * @type {string}
+     */
+    itemActionType = 'url';
+
+    /**
      * A callback used to generate a menu item link URL from a detected element. Should be passed an
      * HTML element and should return a string
      *
      * @type {menuItemCallback|null}
      */
      itemUrlFunction = null;
+
+    /**
+     * A callback used to generate an object containing data used by the specified action type.
+     *
+     * For 'search-mode' the object should be like { searchMode: '<keyword>' }
+     *
+     * @type {menuActionInfoCallback|null}
+     */
+    itemActionInfoFunction = null;
 
      /**
       * True if the item is not to be cached. Used for things like post-specific links like "Edit post"
