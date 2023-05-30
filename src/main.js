@@ -16,7 +16,7 @@ window.turboAdminLog = function() {
 }
 
 window.turboAdminIsExtension = function() {
-    return 'undefined' !== typeof (chrome.storage);
+    return false;
 }
 
 // Use this to clear storage
@@ -64,8 +64,6 @@ async function taInit(settings) {
 
     globalThis.turboAdmin = new TurboAdmin(globalThis.turboAdminOptions);
     await globalThis.turboAdmin.init();
-
-
 
     // This needs all the APIs to be ready
     await globalThis.turboAdmin.activatePlugins();
