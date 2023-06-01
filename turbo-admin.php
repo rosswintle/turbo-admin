@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name:     Turbo Admin
- * Plugin URI:      https://oikos.digital/turbo-admin
+ * Plugin URI:      https://turbo-admin.com/
  * Description:     The command palette that gives super fast access to your WordPress Dashboard.
  * Author:          Ross Wintle
  * Author URI:      https://rosswintle.uk/
