@@ -31,6 +31,11 @@ export default class ListTableShortcuts {
          */
         this.isWooCommerce = false;
 
+        /**
+         * @type {boolean}
+         */
+        this.isPluginInstall = false;
+
         if (!this.listTable) {
             return;
         }
@@ -39,6 +44,11 @@ export default class ListTableShortcuts {
         if (document.body.classList.contains('woocommerce-admin-page') &&
             document.body.classList.contains('post-type-shop_order')) {
             this.isWooCommerce = true;
+        }
+
+        // And for the add plugins screen
+        if (document.body.classList.contains('plugin-install-php')) {
+            this.isPluginInstall = true;
         }
 
         /**
@@ -51,6 +61,11 @@ export default class ListTableShortcuts {
          */
         this.tableRows = this.listTable.querySelectorAll('tbody#the-list > tr');
 
+        // Plugin install is different.
+        if (this.isPluginInstall) {
+            this.tableRows = this.listTable.querySelectorAll('#the-list .plugin-card');
+        }
+
         // Grr... comments list is different! WHY?!
         if (document.body.classList.contains('edit-comments-php')) {
             this.tableRows = this.listTable.querySelectorAll('tbody#the-comment-list > tr');
@@ -60,8 +75,13 @@ export default class ListTableShortcuts {
 
         // Chrome handles escape key on search input elements, so we need to
         // intercept it here.
-        const searchInput = document.querySelector('.search-box input[type="search"]');
-        searchInput.addEventListener('keyup', e => this.handleSearchInputKey(e));
+        const searchInput = document.querySelector(
+            '.search-box input[type="search"], .search-form input[type="search"]'
+        );
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', e => this.handleSearchInputKey(e));
+        }
     }
 
     /**
@@ -69,14 +89,16 @@ export default class ListTableShortcuts {
      * @param {KeyboardEvent} ev
      */
     handleKey(ev) {
-        if (document.activeElement.tagName !== 'BODY') {
+        const isActiveElementBody = document.activeElement.tagName === 'BODY';
+        const isActiveElementInListTable = this.listTable && this.listTable.contains(document.activeElement);
+        const isSearchFocussed = document.getElementById('post-search-input') === document.activeElement;
+        if (!isActiveElementBody && !isActiveElementInListTable && !isSearchFocussed) {
             return;
         }
 
         if (globalThis.turboAdmin.turboAdminPalette.isPaletteOpen()) {
             return;
         }
-
         if (ev.key === 'j') {
             if (this.actionsOpen) {
                 this.actionMoveDown();
@@ -92,6 +114,7 @@ export default class ListTableShortcuts {
         } else if (ev.key.toLowerCase() === 'enter' && this.currentRow !== null) {
             if (this.actionsOpen) {
                 this.openCurrentRowAction(ev);
+                ev.preventDefault();
             } else {
                 this.openTableRowActions(ev);
             }
@@ -109,11 +132,11 @@ export default class ListTableShortcuts {
             if (this.actionsOpen) {
                 this.actionMoveUp(ev);
             }
-        } else if (ev.key.toLowerCase() === 'escape') {
+        } else if (ev.key.toLowerCase() === 'escape' /* && !document.body.classList.contains('modal-open')*/) {
             if (this.actionsOpen) {
                 this.closeTableRowActions(ev);
             }
-            // If the search box is focussed... looks like WP intercepts this! :-(
+            // If the search box is focussed... Note that Chrome does its own thing with escape here.
             if (document.getElementById('post-search-input') === document.activeElement) {
                 document.getElementById('post-search-input').blur();
             }
@@ -129,7 +152,6 @@ export default class ListTableShortcuts {
 
     tableMoveDown() {
         this.preTableChange();
-
         // Move down
         if (this.currentRow === null) {
             this.currentRowIndex = 0;
@@ -161,6 +183,41 @@ export default class ListTableShortcuts {
         if (!this.tableRows[this.currentRowIndex].classList.contains('ta-active-table-row')) {
             this.tableRows[this.currentRowIndex].classList.add('ta-active-table-row');
         }
+
+        // Scroll into view if needed
+        const rowTop = this.currentRow.getBoundingClientRect().top;
+        const rowBottom = this.currentRow.getBoundingClientRect().bottom;
+        const viewportTop = 0;
+        const viewportBottom = window.innerHeight;
+        if (rowBottom > viewportBottom || rowTop < viewportTop) {
+            this.currentRow.scrollIntoView({ behavior: "smooth", block: "end" });
+        }
+    }
+
+    /**
+     * Gets the list table row actions container for the current row
+     */
+    getRowActionsContainer() {
+        let container = this.currentRow.querySelector('.row-actions');
+
+        if (this.isPluginInstall) {
+            container = this.currentRow.querySelector('.plugin-action-buttons');
+        }
+
+        return container;
+    }
+
+    /**
+     * Gets list table row actions for the current row
+     */
+    getRowActions() {
+        let rowActions = this.currentRow.querySelectorAll('.row-actions span a, .row-actions span button');
+
+        if (this.isPluginInstall) {
+            rowActions = this.currentRow.querySelectorAll('.plugin-action-buttons a');
+        }
+
+        return rowActions;
     }
 
     openTableRowActions(ev) {
@@ -174,7 +231,7 @@ export default class ListTableShortcuts {
 
         this.actionsOpen = true;
 
-        const rowActions = this.currentRow.querySelector('.row-actions');
+        let rowActions = this.getRowActionsContainer();
 
         if (rowActions) {
             rowActions.classList.add('visible');
@@ -188,7 +245,7 @@ export default class ListTableShortcuts {
             return;
         }
 
-        const rowActionLinks = rowActions.querySelectorAll('span a, span button');
+        let rowActionLinks = this.getRowActions();
 
         if (rowActionLinks) {
             rowActionLinks[0].classList.add('ta-active-table-row-link');
@@ -220,7 +277,7 @@ export default class ListTableShortcuts {
 
         // Handle the case where the title link is selected
         if (currentLink.closest('strong')) {
-            const rowActions = this.currentRow.querySelectorAll('.row-actions span a, .row-actions span button');
+            const rowActions = this.getRowActions();
             if (rowActions) {
                 rowActions[0].classList.add('ta-active-table-row-link');
                 currentLink.classList.remove('ta-active-table-row-link');
@@ -266,6 +323,7 @@ export default class ListTableShortcuts {
         // TODO: Open the current row action
         /** @type {HTMLElement} */
         const currentLink = document.querySelector('.ta-active-table-row-link');
+        // Don't do this for plugin install screen
         if (currentLink) {
             currentLink.click();
         }
@@ -273,7 +331,8 @@ export default class ListTableShortcuts {
 
     focusSearch(ev) {
         /** @type {HTMLInputElement} */
-        const searchInput = document.querySelector('.search-box input[type="search"]');
+        const searchInput = document.querySelector(
+            '.search-box input[type="search"], .search-form input[type="search"]');
         if (searchInput) {
             searchInput.focus();
             ev.preventDefault();

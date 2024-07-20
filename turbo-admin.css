@@ -583,6 +583,13 @@ body.wp-admin #wpbody-content > .wrap > .notice:not('.notice-success, .notice-er
     background-color: #ddd !important;
 }
 
+.has-row-actions .ta-active-table-row-link,
+.plugin-title .ta-active-table-row-link,
+.plugin-card .name .ta-active-table-row-link,
+.plugin-action-buttons .ta-active-table-row-link {
+    text-decoration: underline !important;
+}
+
 /**
  * Barkeeper
  *
