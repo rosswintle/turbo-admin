@@ -9,6 +9,8 @@ Stable tag: 1.15.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
+Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
+
 == Description ==
 
 Work faster with WordPress using a quick-access command palette and a collection of Dashboard improvements. Simply install, activate and go!
