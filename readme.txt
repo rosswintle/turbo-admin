@@ -3,9 +3,9 @@ Contributors: magicroundabout
 Donate link: https://ko-fi.com/magicroundabout
 Tags: menu, commands, shortcuts
 Requires at least: 4.9
-Tested up to: 6.2
+Tested up to: 6.6
 Requires PHP: 7.4
-Stable tag: 1.15.1
+Stable tag: 1.15.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,11 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.15.2 =
+
+* [Enhancement] List table keyboard shortcuts now work on the "Add New Plugin" screen.
+* [Enhancement] List table keyboard shortcuts now scroll the selected element into view.
 
 = 1.15.1 =
 

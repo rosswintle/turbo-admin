@@ -8,7 +8,7 @@
  * Author URI:      https://rosswintle.uk/
  * Text Domain:     turbo-admin
  * Domain Path:     /languages
- * Version:         1.15.1
+ * Version:         1.15.2
  *
  * @package Turbo_Admin
  */
@@ -162,7 +162,7 @@ function show_profile_fields($user)
                 <span class="description"><?php _e(
                     'Please enter the keyboard shortcut you want to use to activate the Turbo Admin command palette.<br>
 				Do not choose a keyboard combination that your browser already uses.', 'turbo_admin'
-                                          ) ?></span>
+                ) ?></span>
             </td>
         </tr>
         <tr>
