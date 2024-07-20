@@ -216,7 +216,7 @@ turboAdminLog('Notices', notices);
     saveRememberedNotice(noticeId) {
         this.rememberedNoticeIds.push(noticeId);
 
-        if ('object' === typeof(browser)) {
+        if ('object' === typeof(chrome)) {
             chrome.runtime.sendMessage({
                 'action': 'rememberNotice',
                 'noticeId': noticeId,
@@ -259,7 +259,7 @@ turboAdminLog('Notices', notices);
     saveForgottenNotice(noticeId) {
         this.rememberedNoticeIds.push(noticeId);
 
-        if ('object' === typeof(browser)) {
+        if ('object' === typeof(chrome)) {
             chrome.runtime.sendMessage({
                 'action': 'rememberNotice',
                 'noticeId': noticeId,

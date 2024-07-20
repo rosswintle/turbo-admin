@@ -359,7 +359,7 @@ export default class TurboAdmin {
                     'itemTitleFunction': () => "Log in",
                     'itemUrlFunction': () => {
                         if (globalThis.taWp.home) {
-                            return globalThis.taWp.siteUrl;
+                            return globalThis.taWp.ensureTrailingSlash(globalThis.taWp.siteUrl);
                         }
                         // Try getting wp-admin
                         return 'javascript:alert(\'Sorry, could not detect login URL.\')';

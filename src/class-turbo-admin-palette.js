@@ -460,16 +460,22 @@ export default class TurboAdminPalette {
     async paletteActions(e) {
 		if (e.code === 'ArrowDown' && this.paletteShown()) {
 			e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
 			this.moveDown();
 			return;
 		}
 		if (e.code === 'ArrowUp' && this.paletteShown()) {
 			e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
 			this.moveUp();
 			return;
 		}
 		if (e.code === 'Enter' && this.paletteShown()) {
             e.preventDefault();
+            e.stopImmediatePropagation();
+            e.stopPropagation();
             this.doAction(this.metaPressed(e));
             return;
 		}
