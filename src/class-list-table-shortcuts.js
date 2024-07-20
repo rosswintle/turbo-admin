@@ -91,11 +91,10 @@ export default class ListTableShortcuts {
     handleKey(ev) {
         const isActiveElementBody = document.activeElement.tagName === 'BODY';
         const isActiveElementInListTable = this.listTable && this.listTable.contains(document.activeElement);
-        const isSearchFocussed = document.getElementById('post-search-input') === document.activeElement;
-        if (!isActiveElementBody && !isActiveElementInListTable && !isSearchFocussed) {
+        const isSearchFocussed = this.getSearchInputElement() === document.activeElement;
+        if ((!isActiveElementBody && !isActiveElementInListTable) || isSearchFocussed) {
             return;
         }
-
         if (globalThis.turboAdmin.turboAdminPalette.isPaletteOpen()) {
             return;
         }
@@ -150,6 +149,10 @@ export default class ListTableShortcuts {
         }
     }
 
+    getSearchInputElement() {
+        return document.querySelector('.search-box input[type="search"], .search-form input[type="search"]');
+    }
+
     tableMoveDown() {
         this.preTableChange();
         // Move down
@@ -184,13 +187,22 @@ export default class ListTableShortcuts {
             this.tableRows[this.currentRowIndex].classList.add('ta-active-table-row');
         }
 
-        // Scroll into view if needed
-        const rowTop = this.currentRow.getBoundingClientRect().top;
-        const rowBottom = this.currentRow.getBoundingClientRect().bottom;
+        this.scrollIntoViewIfNeeded(this.currentRow);
+    }
+
+    /**
+     * Scrolls the element into view if it is not already.
+     */
+    scrollIntoViewIfNeeded(element) {
+        const elementRect = element.getBoundingClientRect();
+        const elementTop = elementRect.top;
+        const elementBottom = elementRect.bottom;
         const viewportTop = 0;
         const viewportBottom = window.innerHeight;
-        if (rowBottom > viewportBottom || rowTop < viewportTop) {
-            this.currentRow.scrollIntoView({ behavior: "smooth", block: "end" });
+        if (elementBottom > viewportBottom) {
+            element.scrollIntoView({ behavior: "smooth", block: "end" });
+        } else if (elementTop < viewportTop) {
+            element.scrollIntoView({ behavior: "smooth", block: "start" });
         }
     }
 
@@ -331,10 +343,11 @@ export default class ListTableShortcuts {
 
     focusSearch(ev) {
         /** @type {HTMLInputElement} */
-        const searchInput = document.querySelector(
-            '.search-box input[type="search"], .search-form input[type="search"]');
+        const searchInput = this.getSearchInputElement();
+
         if (searchInput) {
             searchInput.focus();
+            this.scrollIntoViewIfNeeded(searchInput);
             ev.preventDefault();
         }
     }
