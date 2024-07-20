@@ -5,7 +5,7 @@ Tags: menu, commands, shortcuts
 Requires at least: 4.9
 Tested up to: 6.2
 Requires PHP: 7.4
-Stable tag: 1.13.3
+Stable tag: 1.15.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -183,6 +183,18 @@ If you're reading this then you've probably already done step 1. So what are you
 2. Settings in the user profile page
 
 == Changelog ==
+
+= 1.15.1 =
+
+* Incorporates all changes from  versions up to 1.15.1 of the browser extension.
+* [Feature] The "Auto-remove block editor welcome screen" feature now hides the pattern selector on the new page screen, and the welcome page on the dashboard.
+* [Feature] New features as part of the List table keyboard shortcuts.
+* [Enhancement] Added stg., .wpenginepowered.com, .bigscoots-staging.com, .azurewebsites.net and localhost as dev/staging URLs.
+* [Enhancement] Show search modes in the command palette.
+* [Fix] Firefox bug fix in the plugin code.
+* [Fix] Restore the input state after a search action.
+* [Fix] Fix annoying issue with login links on LocalWP.
+* [Fix] Fix list table keyboard shortcuts on plugins screen.
 
 = 1.13.3 =
 
